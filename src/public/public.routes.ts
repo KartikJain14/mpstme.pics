@@ -1,0 +1,1 @@
+// Public browsing endpoints for clubs and albums

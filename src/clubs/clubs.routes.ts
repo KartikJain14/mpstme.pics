@@ -1,0 +1,1 @@
+// Club-related endpoints (superadmin + public)

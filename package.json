@@ -1,0 +1,24 @@
+{
+  "name": "msptme.pics",
+  "version": "1.0.0",
+  "description": "Refer to this https://chatgpt.com/share/68605077-abd8-8011-9fc7-b34ec70b2f39 for all the details regarding this project.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KartikJain14/msptme.pics.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/KartikJain14/msptme.pics/issues"
+  },
+  "homepage": "https://github.com/KartikJain14/msptme.pics#readme",
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}

@@ -1,0 +1,1 @@
+// Clubadmin photo upload routes

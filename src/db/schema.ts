@@ -1,0 +1,1 @@
+// Drizzle schema definitions (users, clubs, etc.)

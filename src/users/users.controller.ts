@@ -1,0 +1,1 @@
+// Manage clubadmins (create, delete, list)

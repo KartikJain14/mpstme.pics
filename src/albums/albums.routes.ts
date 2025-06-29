@@ -1,0 +1,1 @@
+// Routes for clubadmin + public album view

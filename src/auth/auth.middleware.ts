@@ -1,0 +1,1 @@
+// Protect routes using JWTs and role-based access
