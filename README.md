@@ -1,183 +1,154 @@
-# mpstme.pics
+# 📸 mpstme.pics — Backend API
 
-Refer to this [chat](https://chatgpt.com/share/68605077-abd8-8011-9fc7-b34ec70b2f39) for all the details regarding this project.
+A secure, scalable, and modular backend for managing and sharing photos within MPSTME college clubs.
+
+> 📚 Full documentation is in [`/docs`](./docs/)
+
+---
+
+## 📂 Project Structure
+
 
 ```
-mpstme-pics-backend/
-├── src/
-│   ├── config/
-│   │   ├── db.ts              # Drizzle ORM config and PostgreSQL connection
-│   │   ├── s3.ts              # AWS S3 client config
-│   │   └── env.ts             # Loads and validates environment variables (dotenv + Zod)
-│   │
-│   ├── auth/
-│   │   ├── auth.controller.ts # Login logic, JWT generation
-│   │   ├── auth.middleware.ts # Protect routes using JWTs and role-based access
-│   │   └── auth.routes.ts     # /auth/login endpoint
-│   │
-│   ├── clubs/
-│   │   ├── clubs.controller.ts  # Create/update/delete clubs (superadmin)
-│   │   ├── clubs.routes.ts      # Club-related endpoints (superadmin + public)
-│   │   └── clubs.service.ts     # Club business logic
-│   │
-│   ├── users/
-│   │   ├── users.controller.ts  # Manage clubadmins (create, delete, list)
-│   │   ├── users.routes.ts      # /admin/users routes
-│   │   └── users.service.ts     # User account logic
-│   │
-│   ├── albums/
-│   │   ├── albums.controller.ts # Create/update/delete albums, toggle visibility
-│   │   ├── albums.routes.ts     # Routes for clubadmin + public album view
-│   │   └── albums.service.ts    # Album logic (validation, slug gen, etc.)
-│   │
-│   ├── photos/
-│   │   ├── photos.controller.ts # Upload/delete/toggle photos
-│   │   ├── photos.routes.ts     # Clubadmin photo upload routes
-│   │   ├── photos.service.ts    # S3 upload logic
-│   │   └── upload.middleware.ts # multer + multer-s3 middleware setup
-│   │
-│   ├── public/
-│   │   └── public.routes.ts     # Public browsing endpoints for clubs and albums
-│   │
-│   ├── audit/
-│   │   ├── audit.middleware.ts  # Middleware to log all write actions
-│   │   └── audit.model.ts       # Drizzle schema for audit_logs table
-│   │
-│   ├── middleware/
-│   │   ├── rateLimiter.ts       # Global rate limiting middleware
-│   │   ├── errorHandler.ts      # Express error handler middleware
-│   │   └── validate.ts          # Zod validation middleware wrapper
-│   │
-│   ├── utils/
-│   │   ├── generateSlug.ts      # Utility to convert names into URL-safe slugs
-│   │   └── fileUtils.ts         # Helpers for file type, size checks, etc.
-│   │
-│   ├── db/
-│   │   ├── schema.ts            # Drizzle schema definitions (users, clubs, etc.)
-│   │   └── migrations/          # Auto-generated SQL migrations (drizzle-kit)
-│   │
-│   └── index.ts                 # App entry point: initializes express, routes, middlewares
-│
-├── .env                         # Environment variables (DO NOT commit)
-├── .env.example                 # Template for required .env vars
-├── drizzle.config.ts            # Drizzle config (DB URL, outDir, etc.)
-├── docker-compose.yml           # PostgreSQL + backend container setup
-├── Dockerfile                   # App Dockerfile
-├── package.json                 # Dependencies and scripts
-├── tsconfig.json                # TypeScript config
-└── README.md                    # Setup instructions and dev notes
+
+mpstme-pics-backend/  
+├── src/  
+│ ├── albums/ # [docs/albums.md]  
+│ ├── audit/ # [docs/audit.md]  
+│ ├── auth/ # [docs/auth.md]  
+│ ├── clubs/ # [docs/clubs.md]  
+│ ├── config/ # DB, S3, and env config  
+│ ├── db/ # Drizzle schemas  
+│ ├── middleware/ # [docs/middleware.md]  
+│ ├── photos/ # [docs/photos.md]  
+│ ├── public/ # [docs/public.md]  
+│ ├── users/ # [docs/users.md]  
+│ ├── utils/ # Slug and file helpers  
+│ └── index.ts # App entry point  
+│  
+├── docs/ # 📚 See below  
+├── drizzle.config.ts  
+├── docker-compose.yml  
+├── Dockerfile  
+├── package.json  
+└── tsconfig.json
+
 ```
 
 ---
 
-AUTH ROUTES
-(Role: superadmin, clubadmin)
+## 🔐 Authentication ([docs/auth.md](./docs/auth.md))
 
-POST /auth/login
-  → Log in with email/password, returns JWT
-
----
-
-SUPERADMIN ROUTES
-(Role: superadmin only)
-
-Club Management
-
-POST   /admin/clubs
-  → Create a new club (name, slug, logo, bio, quota)
-
-PATCH  /admin/clubs/:clubId
-  → Update club info or storage quota
-
-DELETE /admin/clubs/:clubId
-  → Delete a club (cascades albums & users)
+- Email + Password login
+- JWT-based stateless sessions
+- Two roles: `superadmin`, `clubadmin`
+- Middleware: `authenticate` injects `req.user`
 
 ---
 
-User (Club Admin) Management
+## 🛡 Superadmin Routes ([docs/clubs.md](./docs/clubs.md), [docs/users.md](./docs/users.md), [docs/audit.md](./docs/audit.md), [docs/stats.md](./docs/stats.md))
 
-POST   /admin/clubs/:clubId/users
-  → Create new clubadmin for the club
-
-PATCH  /admin/users/:userId
-  → Reset password or modify role/club
-
-DELETE /admin/users/:userId
-  → Revoke a user (soft delete or force)
-
-GET    /admin/users
-  → List all clubadmin users with their club and role
+| Feature         | Docs Link                  |
+|-----------------|----------------------------|
+| Club CRUD       | [clubs.md](./docs/clubs.md)  |
+| Manage Users    | [users.md](./docs/users.md)  |
+| Audit Logging   | [audit.md](./docs/audit.md)  |
+| Stats Dashboard | [stats.md](./docs/stats.md)  |
 
 ---
 
-Logs & Stats
+## 🏫 Clubadmin Dashboard ([docs/albums.md](./docs/albums.md), [docs/photos.md](./docs/photos.md), [docs/storage.md](./docs/storage.md))
 
-GET /admin/audit-logs
-  → View audit trail for all mutations (actor, action, target)
-
-GET /admin/stats
-  → Summary: total clubs, photos, storage used, recent uploads
-
----
-
-CLUBADMIN ROUTES
-(Role: clubadmin)
-
-Club Self Info
-
-GET /me/club
-  → Get current club's metadata (name, logo, quota used, etc.)
-
-Albums
-
-POST   /me/albums
-  → Create new album (name, slug auto-generated)
-
-PATCH  /me/albums/:albumId
-  → Rename or toggle public/private
-
-DELETE /me/albums/:albumId
-  → Soft delete an album
-
-GET    /me/albums
-  → List all albums for the logged-in club
-
-Photos
-
-POST   /me/albums/:albumId/photos
-  → Upload photos (supports multiple files)
-
-DELETE /me/photos/:photoId
-  → Delete a specific photo
-
-PATCH  /me/photos/:photoId
-  → Toggle public/private (or update caption, if added later)
-
-GET    /me/albums/:albumId/photos
-  → List all photos in an album
+| Feature           | Docs Link                    |
+|-------------------|------------------------------|
+| View club info    | [albums.md](./docs/albums.md) |
+| Album CRUD        | [albums.md](./docs/albums.md) |
+| Upload photos     | [photos.md](./docs/photos.md) |
+| Toggle/delete     | [photos.md](./docs/photos.md) |
+| Enforce quotas    | [storage.md](./docs/storage.md) |
 
 ---
 
-PUBLIC ROUTES
-(No auth required)
+## 🌐 Public Interface ([docs/public.md](./docs/public.md))
 
-GET /:clubSlug
-  → Public club page (logo, bio, public albums)
-
-GET /:clubSlug/:albumSlug
-  → Public album view (visible photos only)
-
-GET /:clubSlug/:albumSlug/:photoId
-  → Serve photo via backend proxy (secure delivery)
+| Route                        | Description                     |
+|-----------------------------|---------------------------------|
+| `/clubSlug`                 | Club bio + public albums        |
+| `/clubSlug/albumSlug`       | Album gallery                   |
+| `/clubSlug/albumSlug/photo` | Secure file proxy               |
 
 ---
 
-Final Notes
+## 🧰 Global Middleware ([docs/middleware.md](./docs/middleware.md))
 
-Slug generation: Album and club names are automatically slugified for public URLs.
+- `authenticate.ts` — injects JWT claims
+- `rateLimiter.ts` — protects login & public
+- `errorHandler.ts` — consistent error shape
+- `validate.ts` — wraps Zod schemas
 
-Audit logging: Middleware will log every mutation (create/update/delete) with user ID and action type.
+---
 
-Soft deletes: Used for photos and albums to allow recovery/logging.
+## 🗃 Storage ([docs/storage.md](./docs/storage.md))
 
-Rate limits: Apply per-IP limits on login, upload, and public browse endpoints.
+- AWS S3 storage with structured keys  
+  `clubSlug/albumSlug/filename.jpg`
+- Max size: `env.UPLOAD_MAX_MB`  
+- Public/private toggle via DB
+- Backend serves/proxies all media
+
+---
+
+## 🚀 Local Setup ([docs/setup.md](./docs/setup.md))
+
+```bash
+git clone https://github.com/your-org/mpstme.pics-backend
+cp .env.example .env
+docker-compose up --build
+npx drizzle-kit push
+
+```
+
+Health check: [`GET /health`](./docs/health.md)
+
+----------
+
+## 📚 Documentation Index
+
+Each major module has a dedicated `.md` file:
+
+```
+/docs/
+├── albums.md
+├── audit.md
+├── auth.md
+├── clubs.md
+├── guidelines.md
+├── health.md
+├── middleware.md
+├── overview.md
+├── photos.md
+├── public.md
+├── setup.md
+├── stats.md
+├── storage.md
+└── users.md
+
+```
+
+Start with [overview.md](./docs/overview.md) or [guidelines.md](./guidelines.md) before contributing!
+
+----------
+
+## ✅ Design Principles
+
+-   Soft deletes for all media
+    
+-   Slugs for clean URLs
+    
+-   No direct S3 exposure
+    
+-   Club quota enforcement
+    
+-   Read-only public access
+    
+-   Express-only, no `server.ts`
