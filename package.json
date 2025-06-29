@@ -19,6 +19,15 @@
   },
   "homepage": "https://github.com/KartikJain14/msptme.pics#readme",
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^1.4.13",
+    "@types/multer-s3": "^3.0.3",
+    "@types/node": "^24.0.7",
+    "drizzle-kit": "^0.31.4",
+    "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }
 }
