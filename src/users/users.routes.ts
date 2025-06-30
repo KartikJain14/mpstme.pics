@@ -9,11 +9,14 @@ import { authenticate, requireRole } from '../auth/auth.middleware';
 
 const router = Router();
 
-router.use('/', authenticate, requireRole('superadmin'));
-
-router.post('/admin/clubs/:clubId/users', createUser);
-router.patch('/admin/users/:userId', updateUser);
-router.delete('/admin/users/:userId', deleteUser);
-router.get('/admin/users', listUsers);
+router.post(
+    "/admin/clubs/:clubId/users",
+    authenticate,
+    requireRole("superadmin"),
+    createUser
+);
+router.patch('/admin/users/:userId', authenticate, requireRole('superadmin'), updateUser);
+router.delete('/admin/users/:userId', authenticate, requireRole('superadmin'), deleteUser);
+router.get('/admin/users', authenticate, requireRole('superadmin'), listUsers);
 
 export default router;

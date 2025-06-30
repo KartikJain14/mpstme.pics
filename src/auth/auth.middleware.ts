@@ -1,10 +1,10 @@
 import { NextFunction } from 'express';
 import { verifyToken } from './auth.utils';
 
-export const authenticate = (req: any, res: any, next: any) => {
+export const authenticate = (req: any, res: any, next: NextFunction) => {
   const header = req.headers.authorization;
   if (!header || !header.startsWith('Bearer ')) {
-    return res.status(401).json({ error: 'Missing or invalid token' });
+    return res.status(401).json({ success: false, message: null, error: 'Missing or invalid token', data: null });
   }
 
   try {
@@ -13,14 +13,14 @@ export const authenticate = (req: any, res: any, next: any) => {
     req.user = user;
     next();
   } catch {
-    return res.status(401).json({ error: 'Invalid or expired token' });
+    return res.status(401).json({ success: false, message: null, error: 'Invalid or expired token', data: null });
   }
 };
 
 export const requireRole = (role: 'superadmin' | 'clubadmin') =>
   (req: any, res: any, next: NextFunction) => {
     if (req.user?.role !== role) {
-      return res.status(403).json({ error: 'Insufficient permissions' });
+      return res.status(403).json({ success: false, message: null, error: 'Insufficient permissions', data: null });
     }
     next();
   };

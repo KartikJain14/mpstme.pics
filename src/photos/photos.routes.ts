@@ -10,11 +10,30 @@ import { upload } from './upload.middleware';
 
 const router = Router();
 
-router.use(authenticate, requireRole('clubadmin'));
-
-router.get('/me/albums/:albumId/photos', listPhotos);
-router.post('/me/albums/:albumId/photos', upload.array('photos'), uploadPhotos);
-router.delete('/me/photos/:photoId', deletePhoto);
-router.patch('/me/photos/:photoId', togglePhotoVisibility);
+router.get(
+    "/albums/:albumId/photos",
+    authenticate,
+    requireRole("clubadmin"),
+    listPhotos
+);
+router.post(
+    "/albums/:albumId/photos",
+    authenticate,
+    requireRole("clubadmin"),
+    upload.array("photos"),
+    uploadPhotos
+);
+router.delete(
+    "/photos/:photoId",
+    authenticate,
+    requireRole("clubadmin"),
+    deletePhoto
+);
+router.patch(
+    "/photos/:photoId",
+    authenticate,
+    requireRole("clubadmin"),
+    togglePhotoVisibility
+);
 
 export default router;

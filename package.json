@@ -4,6 +4,7 @@
   "description": "Refer to this https://chatgpt.com/share/68605077-abd8-8011-9fc7-b34ec70b2f39 for all the details regarding this project.",
   "main": "index.js",
   "scripts": {
+    "dev": "nodemon src/server.ts",
     "start": "ts-node src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -26,6 +27,7 @@
     "@types/multer-s3": "^3.0.3",
     "@types/node": "^24.0.7",
     "@types/pg": "^8.15.4",
+    "nodemon": "^3.1.10",
     "typescript": "^5.8.3"
   },
   "dependencies": {

@@ -12,12 +12,12 @@ export const listPhotos = async (req: any, res: any) => {
     and(eq(albums.id, Number(albumId)), eq(albums.clubId, clubId), eq(albums.deleted, false))
   );
 
-  if (!album.length) return res.status(404).json({ error: 'Album not found' });
+  if (!album.length) return res.status(404).json({ success: false, message: null, error: 'Album not found', data: null });
 
   const result = await db.select().from(photos).where(
     and(eq(photos.albumId, Number(albumId)), eq(photos.deleted, false))
   );
-  res.json(result);
+  res.json({ success: true, message: null, error: null, data: result });
 };
 
 // POST /me/albums/:albumId/photos
@@ -29,9 +29,9 @@ export const uploadPhotos = async (req: any, res: any) => {
     and(eq(albums.id, Number(albumId)), eq(albums.clubId, clubId), eq(albums.deleted, false))
   );
 
-  if (!album) return res.status(404).json({ error: 'Album not found' });
+  if (!album) return res.status(404).json({ success: false, message: null, error: 'Album not found', data: null });
   if (!req.files || !Array.isArray(req.files)) {
-    return res.status(400).json({ error: 'No files uploaded' });
+    return res.status(400).json({ success: false, message: null, error: 'No files uploaded', data: null });
   }
 
   const incomingBytes = req.files.reduce((acc: number, f: any) => acc + f.size, 0);
@@ -47,7 +47,7 @@ export const uploadPhotos = async (req: any, res: any) => {
   }));
 
   const result = await db.insert(photos).values(entries).returning();
-  res.status(201).json(result);
+  res.status(201).json({ success: true, message: 'Photos uploaded', error: null, data: result });
 };
 
 // DELETE /me/photos/:photoId
@@ -65,13 +65,13 @@ export const deletePhoto = async (req: any, res: any) => {
       )
     );
 
-  if (!match.length) return res.status(404).json({ error: 'Not found or unauthorized' });
+  if (!match.length) return res.status(404).json({ success: false, message: null, error: 'Not found or unauthorized', data: null });
 
   await db.update(photos)
     .set({ deleted: true })
     .where(eq(photos.id, Number(photoId)));
 
-  res.json({ message: 'Photo deleted' });
+  res.json({ success: true, message: 'Photo deleted', error: null, data: null });
 };
 
 // PATCH /me/photos/:photoId
@@ -89,7 +89,7 @@ export const togglePhotoVisibility = async (req: any, res: any) => {
       )
     );
 
-  if (!match.length) return res.status(404).json({ error: 'Not found or unauthorized' });
+  if (!match.length) return res.status(404).json({ success: false, message: null, error: 'Not found or unauthorized', data: null });
 
   const current = match[0].isPublic;
   const [updated] = await db.update(photos)
@@ -97,5 +97,5 @@ export const togglePhotoVisibility = async (req: any, res: any) => {
     .where(eq(photos.id, Number(photoId)))
     .returning();
 
-  res.json(updated);
+  res.json({ success: true, message: 'Photo visibility toggled', error: null, data: updated });
 };

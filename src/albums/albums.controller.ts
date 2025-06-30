@@ -10,14 +10,14 @@ export const listAlbums = async (req: any, res: any) => {
   const all = await db.select().from(albums).where(
     and(eq(albums.clubId, clubId), eq(albums.deleted, false))
   );
-  res.json(all);
+  res.json({ success: true, message: null, error: null, data: all });
 };
 
 // POST /me/albums
 export const createAlbum = async (req: any, res: any) => {
   const schema = z.object({ name: z.string().min(2).max(255) });
   const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: parsed.error.format() });
+  if (!parsed.success) return res.status(400).json({ success: false, message: null, error: parsed.error.format(), data: null });
 
   const clubId = req.user.clubId;
   const { name } = parsed.data;
@@ -30,7 +30,7 @@ export const createAlbum = async (req: any, res: any) => {
     isPublic: true,
   }).returning();
 
-  res.status(201).json(album);
+  res.status(201).json({ success: true, message: 'Album created', error: null, data: album });
 };
 
 // PATCH /me/albums/:albumId
@@ -41,7 +41,7 @@ export const updateAlbum = async (req: any, res: any) => {
     isPublic: z.boolean().optional(),
   });
   const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: parsed.error.format() });
+  if (!parsed.success) return res.status(400).json({ success: false, message: null, error: parsed.error.format(), data: null });
 
   const clubId = req.user.clubId;
   const changes: any = { ...parsed.data };
@@ -54,8 +54,8 @@ export const updateAlbum = async (req: any, res: any) => {
     .where(and(eq(albums.id, Number(albumId)), eq(albums.clubId, clubId)))
     .returning();
 
-  if (!updated) return res.status(404).json({ error: 'Album not found' });
-  res.json(updated);
+  if (!updated) return res.status(404).json({ success: false, message: null, error: 'Album not found', data: null });
+  res.json({ success: true, message: 'Album updated', error: null, data: updated });
 };
 
 // DELETE /me/albums/:albumId
@@ -68,6 +68,6 @@ export const deleteAlbum = async (req: any, res: any) => {
     .where(and(eq(albums.id, Number(albumId)), eq(albums.clubId, clubId)))
     .returning();
 
-  if (!deleted) return res.status(404).json({ error: 'Album not found' });
-  res.json({ message: 'Album deleted', id: albumId });
+  if (!deleted) return res.status(404).json({ success: false, message: null, error: 'Album not found', data: null });
+  res.json({ success: true, message: 'Album deleted', error: null, data: { id: albumId } });
 };

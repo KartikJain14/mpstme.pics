@@ -13,12 +13,12 @@ export const createUser = async (req: any, res: any) => {
   });
   const parsed = bodySchema.safeParse(req.body);
   if (!parsed.success) {
-    return res.status(400).json({ error: parsed.error.format() });
+    return res.status(400).json({ success: false, message: null, error: parsed.error.format(), data: null });
   }
 
   const { email, password } = parsed.data;
   const [existing] = await db.select().from(users).where(eq(users.email, email));
-  if (existing) return res.status(409).json({ error: 'Email already in use' });
+  if (existing) return res.status(409).json({ success: false, message: null, error: 'Email already in use', data: null });
 
   const hashed = await hashPassword(password);
 
@@ -29,7 +29,7 @@ export const createUser = async (req: any, res: any) => {
     clubId: Number(clubId),
   }).returning();
 
-  res.status(201).json(created);
+  res.status(201).json({ success: true, message: 'User created', error: null, data: created });
 };
 
 // Update user: password, role or club
@@ -43,7 +43,7 @@ export const updateUser = async (req: any, res: any) => {
 
   const parsed = bodySchema.safeParse(req.body);
   if (!parsed.success) {
-    return res.status(400).json({ error: parsed.error.format() });
+    return res.status(400).json({ success: false, message: null, error: parsed.error.format(), data: null });
   }
 
   const updateData: any = { ...parsed.data };
@@ -57,8 +57,8 @@ export const updateUser = async (req: any, res: any) => {
     .where(eq(users.id, Number(userId)))
     .returning();
 
-  if (!updated) return res.status(404).json({ error: 'User not found' });
-  res.json(updated);
+  if (!updated) return res.status(404).json({ success: false, message: null, error: 'User not found', data: null });
+  res.json({ success: true, message: 'User updated', error: null, data: updated });
 };
 
 // Delete user (soft delete — set passwordHash = null)
@@ -70,12 +70,12 @@ export const deleteUser = async (req: any, res: any) => {
     .where(eq(users.id, Number(userId)))
     .returning();
 
-  if (!deleted) return res.status(404).json({ error: 'User not found' });
-  res.json({ message: 'User revoked', deleted });
+  if (!deleted) return res.status(404).json({ success: false, message: null, error: 'User not found', data: null });
+  res.json({ success: true, message: 'User revoked', error: null, data: deleted });
 };
 
 // List all users (superadmin view)
 export const listUsers = async (_req: any, res: any) => {
   const all = await db.select().from(users);
-  res.json(all);
+  res.json({ success: true, message: null, error: null, data: all });
 };

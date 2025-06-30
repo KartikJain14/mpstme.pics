@@ -15,6 +15,8 @@ const app = express();
 app.use(rateLimiter);
 app.use(express.json());
 
+app.get('/health', (req: any, res: any) => res.json({ status: 'ok', time: new Date().toISOString() }));
+
 app.use(albumsRoutes);
 app.use('/auth', authRoutes);
 app.use(auditRoutes);
@@ -24,9 +26,8 @@ app.use(userRoutes);
 
 app.use(publicRoutes);
 
-app.get('/health', (_req: any, res: any) => res.json({ status: 'ok', time: new Date().toISOString() }));
 
-app.use('*', (_req: any, res: any) => res.status(404).json({ error: 'Not found' }));
+app.use((_req: any, res: any) => res.status(404).json({ error: 'Not found' }));
 app.use(errorHandler);
 
 const PORT = env.PORT;

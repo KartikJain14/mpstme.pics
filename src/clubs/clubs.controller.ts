@@ -15,14 +15,14 @@ export const createClub = async (req: any, res: any) => {
 
   const parsed = bodySchema.safeParse(req.body);
   if (!parsed.success) {
-    return res.status(400).json({ error: parsed.error.format() });
+    return res.status(400).json({ success: false, message: null, error: parsed.error.format(), data: null });
   }
 
   const { name, logoUrl, bio, storageQuotaMb } = parsed.data;
   const slug = generateSlug(name);
 
   const [existing] = await db.select().from(clubs).where(eq(clubs.slug, slug));
-  if (existing) return res.status(409).json({ error: 'Slug already exists' });
+  if (existing) return res.status(409).json({ success: false, message: null, error: 'Slug already exists', data: null });
 
   const [created] = await db.insert(clubs).values({
     name,
@@ -32,7 +32,7 @@ export const createClub = async (req: any, res: any) => {
     storageQuotaMb,
   }).returning();
 
-  res.status(201).json(created);
+  res.status(201).json({ success: true, message: 'Club created', error: null, data: created });
 };
 
 export const updateClub = async (req: any, res: any) => {
@@ -46,7 +46,7 @@ export const updateClub = async (req: any, res: any) => {
 
   const parsed = bodySchema.safeParse(req.body);
   if (!parsed.success) {
-    return res.status(400).json({ error: parsed.error.format() });
+    return res.status(400).json({ success: false, message: null, error: parsed.error.format(), data: null });
   }
 
   const updateData: any = { ...parsed.data };
@@ -59,9 +59,9 @@ export const updateClub = async (req: any, res: any) => {
     .where(eq(clubs.id, Number(clubId)))
     .returning();
 
-  if (!updated) return res.status(404).json({ error: 'Club not found' });
+  if (!updated) return res.status(404).json({ success: false, message: null, error: 'Club not found', data: null });
 
-  res.json(updated);
+  res.json({ success: true, message: 'Club updated', error: null, data: updated });
 };
 
 export const deleteClub = async (req: any, res: any) => {
@@ -71,16 +71,16 @@ export const deleteClub = async (req: any, res: any) => {
     .where(eq(clubs.id, Number(clubId)))
     .returning();
 
-  if (!deleted) return res.status(404).json({ error: 'Club not found' });
+  if (!deleted) return res.status(404).json({ success: false, message: null, error: 'Club not found', data: null });
 
-  res.json({ message: 'Club deleted', deleted });
+  res.json({ success: true, message: 'Club deleted', error: null, data: deleted });
 };
 
 export const getMyClub = async (req: any, res: any) => {
   const clubId = req.user.clubId;
 
   const [club] = await db.select().from(clubs).where(eq(clubs.id, clubId));
-  if (!club) return res.status(404).json({ error: 'Club not found' });
+  if (!club) return res.status(404).json({ success: false, message: null, error: 'Club not found', data: null });
 
   const [photoStats] = await db
     .select({ totalSize: sum(photos.sizeInBytes) })
@@ -91,12 +91,17 @@ export const getMyClub = async (req: any, res: any) => {
   const used = photoStats?.totalSize || 0;
 
   res.json({
-    id: club.id,
-    name: club.name,
-    slug: club.slug,
-    logoUrl: club.logoUrl,
-    bio: club.bio,
-    storageQuotaMb: club.storageQuotaMb,
-    storageUsedMb: +(Number(used) / (1024 * 1024)).toFixed(2),
+    success: true,
+    message: null,
+    error: null,
+    data: {
+      id: club.id,
+      name: club.name,
+      slug: club.slug,
+      logoUrl: club.logoUrl,
+      bio: club.bio,
+      storageQuotaMb: club.storageQuotaMb,
+      storageUsedMb: +(Number(used) / (1024 * 1024)).toFixed(2),
+    }
   });
 };

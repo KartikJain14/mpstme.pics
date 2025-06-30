@@ -5,13 +5,13 @@ import { comparePassword, generateToken } from './auth.utils';
 
 export const login = async (req: any, res: any) => {
   const { email, password } = req.body;
-  if (!email || !password) return res.status(400).json({ error: 'Missing email or password' });
+  if (!email || !password) return res.status(400).json({ success: false, message: null, error: 'Missing email or password', data: null });
 
   const [user] = await db.select().from(users).where(eq(users.email, email));
-  if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+  if (!user) return res.status(401).json({ success: false, message: null, error: 'Invalid credentials', data: null });
 
   const isValid = await comparePassword(password, user.passwordHash);
-  if (!isValid) return res.status(401).json({ error: 'Invalid credentials' });
+  if (!isValid) return res.status(401).json({ success: false, message: null, error: 'Invalid credentials', data: null });
 
   const token = generateToken({
     id: user.id,
@@ -19,5 +19,5 @@ export const login = async (req: any, res: any) => {
     clubId: user.clubId ?? undefined,
   });
 
-  res.json({ token });
+  res.json({ success: true, message: 'Login successful', error: null, data: { token } });
 };

@@ -18,7 +18,7 @@ export const getAuditLogs = async (req: any, res: any) => {
     .orderBy(desc(auditLogs.timestamp))
     .limit(100);
 
-  res.json({ logs });
+  res.json({ success: true, message: null, error: null, data: logs });
 };
 
 export const getStats = async (req: any, res: any) => {
@@ -28,9 +28,14 @@ export const getStats = async (req: any, res: any) => {
   const [storageUsed] = await db.select({ totalSize: sum(photos.sizeInBytes) }).from(photos);
 
   res.json({
-    totalClubs: Number(clubCount.count),
-    totalPhotos: Number(photoCount.count),
-    totalUsers: Number(userCount.count),
-    totalStorageMb: +(Number(storageUsed.totalSize || 0) / (1024 * 1024)).toFixed(2),
+    success: true,
+    message: null,
+    error: null,
+    data: {
+      totalClubs: Number(clubCount.count),
+      totalPhotos: Number(photoCount.count),
+      totalUsers: Number(userCount.count),
+      totalStorageMb: +(Number(storageUsed.totalSize || 0) / (1024 * 1024)).toFixed(2),
+    }
   });
 };
