@@ -9,9 +9,15 @@ import photosRoutes from './photos/photos.routes';
 import publicRoutes from './public/public.routes';
 import userRoutes from './users/users.routes';
 import { env } from './config/env';
+import morgan from 'morgan';
 
 const app = express();
 
+morgan.token("user-id", (req: any, _) => {
+    return req.user != undefined ? req.user.id : "Unauthenticated";
+});
+const logFormat = `[:date[web]] - :method :url HTTP/:http-version :status :referrer :user-agent User::user-id - :response-time ms`;
+app.use(morgan(logFormat));
 app.use(rateLimiter);
 app.use(express.json());
 
