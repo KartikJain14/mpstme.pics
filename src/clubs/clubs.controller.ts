@@ -2,7 +2,7 @@ import { db } from '../config/db';
 import { clubs } from '../db/schema';
 import { z } from 'zod';
 import { generateSlug } from '../utils/generateSlug';
-import { count, eq, sum } from 'drizzle-orm';
+import { eq, sum } from "drizzle-orm";
 import { albums, photos } from '../db/schema';
 
 export const createClub = async (req: any, res: any) => {
