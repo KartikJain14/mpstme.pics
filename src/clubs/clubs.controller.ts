@@ -38,7 +38,7 @@ export const createClub = async (req: any, res: any) => {
             .json({
                 success: false,
                 message: null,
-                error: "Slug already exists",
+                error: `Slug ${slug} already exists`,
                 data: null,
             });
 
@@ -67,6 +67,7 @@ export const updateClub = async (req: any, res: any) => {
         name: z.string().min(2).optional(),
         logoUrl: z.string().url().optional(),
         bio: z.string().optional(),
+        slug: z.string().optional(),
         storageQuotaMb: z.number().int().positive().optional(),
     });
 
@@ -83,7 +84,7 @@ export const updateClub = async (req: any, res: any) => {
     }
 
     const updateData: any = { ...parsed.data };
-    if (updateData.name) {
+    if (updateData.name && !updateData.slug) {
         updateData.slug = generateSlug(updateData.name);
     }
 
