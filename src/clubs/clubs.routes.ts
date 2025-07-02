@@ -4,11 +4,18 @@ import {
     updateClub,
     deleteClub,
     getMyClub,
+    getAllClubs,
 } from "./clubs.controller";
 import { authenticate, requireRole } from "../auth/auth.middleware";
 
 const router = Router();
 
+router.get(
+    "/admin/clubs",
+    authenticate,
+    requireRole("superadmin"),
+    getAllClubs
+);
 router.post(
     "/admin/clubs",
     authenticate,

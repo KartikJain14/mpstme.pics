@@ -174,3 +174,8 @@ export const getMyClub = async (req: any, res: any) => {
         },
     });
 };
+
+export const getAllClubs = async (req: any, res: any) => {
+    const all = await db.select().from(clubs);
+    res.json({ success: true, message: null, error: null, data: all });
+}
