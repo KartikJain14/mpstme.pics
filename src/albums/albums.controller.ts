@@ -56,6 +56,7 @@ export const updateAlbum = async (req: any, res: any) => {
     const schema = z.object({
         name: z.string().optional(),
         isPublic: z.boolean().optional(),
+        slug: z.string().optional()
     });
     const parsed = schema.safeParse(req.body);
     if (!parsed.success)
@@ -70,7 +71,7 @@ export const updateAlbum = async (req: any, res: any) => {
 
     const clubId = req.user.clubId;
     const changes: any = { ...parsed.data };
-    if (changes.name) {
+    if (changes.name && !changes.slug) {
         changes.slug = generateSlug(changes.name);
     }
 
