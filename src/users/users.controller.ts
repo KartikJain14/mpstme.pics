@@ -113,20 +113,18 @@ export const deleteUser = async (req: any, res: any) => {
     const { userId } = req.params;
 
     const [deleted] = await db
-        .update(users)
-        .set({ passwordHash: undefined })
+        .delete(users)
         .where(eq(users.id, Number(userId)))
         .returning();
 
-    if (!deleted)
-        return res
-            .status(404)
-            .json({
-                success: false,
-                message: null,
-                error: "User not found",
-                data: null,
-            });
+    if (!deleted){
+        return res.status(404).json({
+            success: false,
+            message: null,
+            error: "User not found",
+            data: null,
+        });
+    }
     res.json({
         success: true,
         message: "User revoked",
