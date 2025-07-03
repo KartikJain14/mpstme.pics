@@ -15,7 +15,6 @@ export const users = pgTable("users", {
     passwordHash: varchar("password_hash", { length: 255 }).notNull(),
     role: text("role", { enum: ["superadmin", "clubadmin"] }).notNull(),
     clubId: integer("club_id").references(() => clubs.id),
-    deleted: boolean("deleted").default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
