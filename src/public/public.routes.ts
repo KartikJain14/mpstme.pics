@@ -3,8 +3,8 @@ import { getClubPublicPage, getPublicAlbum, servePublicPhoto } from "./public.co
 
 const router = Router();
 
-router.get("/committee/:clubSlug", getClubPublicPage);
-router.get("/committee/:clubSlug/:albumSlug", getPublicAlbum);
-router.get("/committee/:clubSlug/:albumSlug/photo/:photoId", servePublicPhoto);
+router.get("/club/:clubSlug", getClubPublicPage);
+router.get("/club/:clubSlug/:albumSlug", getPublicAlbum);
+router.get("/club/:clubSlug/:albumSlug/photo/:photoId", servePublicPhoto);
 
 export default router;
