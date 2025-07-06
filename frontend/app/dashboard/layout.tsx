@@ -1,0 +1,141 @@
+"use client";
+
+import type React from "react";
+
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { LogoutButton } from "@/components/logout-button";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  FolderOpen,
+  Settings,
+  Plus,
+  ImageIcon,
+  BarChart3,
+} from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+
+const navigation = [
+  { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Albums", href: "/dashboard/albums", icon: FolderOpen },
+  { name: "Photos", href: "/dashboard/photos", icon: ImageIcon },
+  { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
+  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+];
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+  const { user } = useAuth();
+
+  return (
+    <div className="min-h-screen bg-background flex">
+      {/* Sidebar */}
+      <div className="w-64 bg-card border-r border-border flex flex-col">
+        {/* Club Header */}
+        <div className="p-6 border-b border-border/50">
+          <Link
+            href="/"
+            className="text-lg font-semibold text-foreground mb-4 block"
+          >
+            mpstme.pics
+          </Link>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold rounded-lg">
+              CSI
+            </div>
+            <div>
+              <h2 className="font-semibold text-foreground">CSI Admin</h2>
+              <p className="text-xs text-muted-foreground">Computer Society</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 mt-3">
+            <Badge
+              variant="secondary"
+              className="bg-green-50 text-green-700 border-green-200"
+            >
+              Active
+            </Badge>
+            <Badge variant="secondary">120 members</Badge>
+          </div>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 p-4">
+          <ul className="space-y-1">
+            {navigation.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <li key={item.name}>
+                  <Link
+                    href={item.href}
+                    className={`flex items-center gap-3 px-3 py-2.5 text-sm rounded-lg transition-colors ${
+                      isActive
+                        ? "bg-accent text-accent-foreground font-medium"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                    }`}
+                  >
+                    <item.icon className="w-4 h-4" />
+                    {item.name}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        {/* User Section */}
+        <div className="p-4 border-t border-border/50">
+          <div className="flex items-center gap-3 mb-3">
+            <Avatar className="w-8 h-8">
+              <AvatarFallback className="bg-muted text-muted-foreground text-xs font-medium">
+                {user?.email?.charAt(0).toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground truncate">
+                {user?.role === "superadmin" ? "Super Admin" : "Club Admin"}
+              </p>
+              <p className="text-xs text-muted-foreground truncate">
+                {user?.email}
+              </p>
+            </div>
+          </div>
+          <LogoutButton className="w-full justify-start" />
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
+        {/* Top Bar */}
+        <header className="bg-card border-b border-border px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold text-foreground">
+                Dashboard
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                Manage your club's photo gallery and content
+              </p>
+            </div>
+            <Link href="/dashboard/albums/new">
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <Plus className="w-4 h-4 mr-2" />
+                Create album
+              </Button>
+            </Link>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1 p-8">{children}</main>
+      </div>
+    </div>
+  );
+}

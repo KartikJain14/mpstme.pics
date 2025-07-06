@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 210 16.6667% 97.6471%;
+    --foreground: 240 5.8824% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 5.8824% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 5.8824% 10%;
+    --primary: 240 5.8824% 10%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 40% 96.0784%;
+    --secondary-foreground: 240 5.8824% 10%;
+    --muted: 210 15.7895% 92.549%;
+    --muted-foreground: 208.2353 7.2961% 45.6863%;
+    --accent: 240 3.8298% 46.0784%;
+    --accent-foreground: 240 5.8824% 10%;
+    --destructive: 346.8367 77.1654% 49.8039%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 210 13.7931% 88.6275%;
+    --input: 210 13.7931% 88.6275%;
+    --ring: 240 5.0279% 64.902%;
+    --chart-1: 220 8.9362% 46.0784%;
+    --chart-2: 217.8947 10.6145% 64.902%;
+    --chart-3: 216 12.1951% 83.9216%;
+    --chart-4: 220 13.0435% 90.9804%;
+    --chart-5: 220 14.2857% 95.8824%;
+    --sidebar: 0 0% 100%;
+    --sidebar-foreground: 240 5.8824% 10%;
+    --sidebar-primary: 240 5.8824% 10%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.8298% 46.0784%;
+    --sidebar-accent-foreground: 240 5.8824% 10%;
+    --sidebar-border: 210 13.7931% 88.6275%;
+    --sidebar-ring: 240 5.0279% 64.902%;
+    --font-sans: Geist Sans, sans-serif;
+    --font-serif: Georgia, serif;
+    --font-mono: Geist Mono, monospace;
+    --radius: 0.5rem;
+    --shadow-2xs: 0px 0px 0px 0px hsl(0 0% 0% / 0);
+    --shadow-xs: 0px 0px 0px 0px hsl(0 0% 0% / 0);
+    --shadow-sm: 0px 0px 0px 0px hsl(0 0% 0% / 0),
+      0px 1px 2px -1px hsl(0 0% 0% / 0);
+    --shadow: 0px 0px 0px 0px hsl(0 0% 0% / 0),
+      0px 1px 2px -1px hsl(0 0% 0% / 0);
+    --shadow-md: 0px 0px 0px 0px hsl(0 0% 0% / 0),
+      0px 2px 4px -1px hsl(0 0% 0% / 0);
+    --shadow-lg: 0px 0px 0px 0px hsl(0 0% 0% / 0),
+      0px 4px 6px -1px hsl(0 0% 0% / 0);
+    --shadow-xl: 0px 0px 0px 0px hsl(0 0% 0% / 0),
+      0px 8px 10px -1px hsl(0 0% 0% / 0);
+    --shadow-2xl: 0px 0px 0px 0px hsl(0 0% 0% / 0);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+html {
+  font-size: 10px;
+}
