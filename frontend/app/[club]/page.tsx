@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import type { Club, Album } from "@/lib/types";
+import { use } from "react";
 
 export default function ClubPage({ params }: { params: { club: string } }) {
   const { user } = useAuth();
@@ -16,14 +17,17 @@ export default function ClubPage({ params }: { params: { club: string } }) {
   const [albums, setAlbums] = useState<Album[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { club: clubSlug } = use(params);
 
   useEffect(() => {
     const fetchClubData = async () => {
       try {
-        const response = await api.getPublicClub(params.club);
+        const response = await api.getPublicClub(clubSlug);
         if (response.success && response.data) {
           setClub(response.data.club);
-          setAlbums(response.data.albums);
+          console.log("Club data:", response.data.club);
+          setAlbums(response.data.publicAlbums || []);
+          console.log("Albums data:", response.data);
         } else {
           setError("Club not found");
         }
@@ -35,7 +39,7 @@ export default function ClubPage({ params }: { params: { club: string } }) {
     };
 
     fetchClubData();
-  }, [params.club]);
+  }, [clubSlug]);
 
   if (loading) {
     return (
@@ -130,7 +134,8 @@ export default function ClubPage({ params }: { params: { club: string } }) {
           <div className="space-y-8">
             <div className="flex items-start gap-8">
               <div className="w-20 h-20 bg-foreground text-background flex items-center justify-center text-2xl font-mono font-medium rounded-none flex-shrink-0">
-                {club.logo}
+                {club.logoUrl ? (
+                  <img className="w-full h-full object-cover rounded-none" src={club.logoUrl} alt={`${club.name} logo`} />) : <></>}
               </div>
               <div className="space-y-6 flex-1">
                 <div className="space-y-4">
@@ -152,22 +157,17 @@ export default function ClubPage({ params }: { params: { club: string } }) {
               <div className="space-y-2">
                 <div className="text-muted-foreground">MEMBERS</div>
                 <div className="text-2xl font-medium text-emerald-600">
-                  {club.memberCount.toString().padStart(3, "0")}
                 </div>
               </div>
               <div className="space-y-2">
                 <div className="text-muted-foreground">ALBUMS</div>
                 <div className="text-2xl font-medium text-blue-600">
-                  {albums.length.toString().padStart(2, "0")}
                 </div>
               </div>
               <div className="space-y-2">
                 <div className="text-muted-foreground">PHOTOS</div>
                 <div className="text-2xl font-medium text-purple-600">
-                  {albums
-                    .reduce((sum, album) => sum + album.photoCount, 0)
-                    .toString()
-                    .padStart(3, "0")}
+
                 </div>
               </div>
             </div>
@@ -242,7 +242,6 @@ export default function ClubPage({ params }: { params: { club: string } }) {
                         <div className="flex items-center justify-between font-mono text-xs">
                           <div className="flex items-center gap-4">
                             <span className="text-blue-600">
-                              {album.photoCount.toString().padStart(2, "0")}{" "}
                               PHOTOS
                             </span>
                           </div>
