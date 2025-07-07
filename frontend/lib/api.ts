@@ -1,142 +1,218 @@
-import type { User, Club, Album, Photo, ApiResponse } from "./types"
+import type { User, Club, Album, Photo, ApiResponse } from "./types";
 
-const API_BASE = "/api"
+const API_BASE = "/api"; // Use Next.js proxy instead of direct backend URL
 
 class ApiClient {
-  private token: string | null = null
+  private token: string | null = null;
 
   constructor() {
     if (typeof window !== "undefined") {
-      this.token = localStorage.getItem("auth_token")
+      this.token = localStorage.getItem("auth_token");
     }
   }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
-    const url = `${API_BASE}${endpoint}`
-    const headers: HeadersInit = {
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<ApiResponse<T>> {
+    const url = `${API_BASE}${endpoint}`;
+    const headers: Record<string, string> = {
       "Content-Type": "application/json",
-      ...options.headers,
-    }
+      ...(options.headers as Record<string, string>),
+    };
 
     if (this.token) {
-      headers.Authorization = `Bearer ${this.token}`
+      headers["Authorization"] = `Bearer ${this.token}`;
     }
 
     const response = await fetch(url, {
       ...options,
       headers,
-    })
+    });
 
-    const data = await response.json()
-    return data
+    const data = await response.json();
+    return data;
   }
 
   // Auth
   async login(email: string, password: string) {
-    const response = await this.request<{ user: User; token: string }>("/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    })
+    const response = await this.request<{ user: User; token: string }>(
+      "/auth/login",
+      {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      }
+    );
 
     if (response.success && response.data) {
-      this.token = response.data.token
-      localStorage.setItem("auth_token", response.data.token)
-      localStorage.setItem("user", JSON.stringify(response.data.user))
+      this.token = response.data.token;
+      localStorage.setItem("auth_token", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
     }
 
-    return response
+    return response;
   }
 
   logout() {
-    this.token = null
-    localStorage.removeItem("auth_token")
-    localStorage.removeItem("user")
+    this.token = null;
+    localStorage.removeItem("auth_token");
+    localStorage.removeItem("user");
   }
 
   getCurrentUser(): User | null {
-    if (typeof window === "undefined") return null
-    const userStr = localStorage.getItem("user")
-    return userStr ? JSON.parse(userStr) : null
+    if (typeof window === "undefined") return null;
+    const userStr = localStorage.getItem("user");
+    return userStr ? JSON.parse(userStr) : null;
   }
 
   // Public routes
+  async getAllPublicClubs() {
+    return this.request<Club[]>("/clubs");
+  }
+
   async getPublicClub(clubSlug: string) {
-    return this.request<{ club: Club; albums: Album[] }>(`/${clubSlug}`)
+    return this.request<{ club: Club; albums: Album[] }>(`/club/${clubSlug}`);
   }
 
   async getPublicAlbum(clubSlug: string, albumSlug: string) {
-    return this.request<{ club: Club; album: Album; photos: Photo[] }>(`/${clubSlug}/${albumSlug}`)
+    return this.request<{ club: Club; album: Album; photos: Photo[] }>(
+      `/club/${clubSlug}/${albumSlug}`
+    );
+  }
+
+  async getPublicPhoto(clubSlug: string, albumSlug: string, photoId: number) {
+    return this.request<any>(`/club/${clubSlug}/${albumSlug}/photo/${photoId}`);
   }
 
   // Club admin routes
   async getMyClub() {
-    return this.request<Club>("/me/club")
+    return this.request<Club>("/me/club");
   }
 
   async getMyAlbums() {
-    return this.request<Album[]>("/me/albums")
+    return this.request<Album[]>("/me/albums");
   }
 
   async createAlbum(data: { name: string; description?: string }) {
     return this.request<Album>("/me/albums", {
       method: "POST",
       body: JSON.stringify(data),
-    })
+    });
   }
 
-  async updateAlbum(albumId: string, data: Partial<Album>) {
+  async updateAlbum(albumId: number, data: Partial<Album>) {
     return this.request<Album>(`/me/albums/${albumId}`, {
       method: "PATCH",
       body: JSON.stringify(data),
-    })
+    });
   }
 
-  async deleteAlbum(albumId: string) {
+  async deleteAlbum(albumId: number) {
     return this.request(`/me/albums/${albumId}`, {
       method: "DELETE",
-    })
+    });
   }
 
-  async getAlbumPhotos(albumId: string) {
-    return this.request<Photo[]>(`/me/albums/${albumId}/photos`)
+  async getAlbumPhotos(albumId: number) {
+    return this.request<Photo[]>(`/albums/${albumId}/photos`);
   }
 
-  async uploadPhotos(albumId: string, files: File[]) {
-    // Simulate file upload - in production, use FormData
-    return this.request<Photo[]>(`/me/albums/${albumId}/photos`, {
+  async uploadPhotos(albumId: number, files: File[]) {
+    const formData = new FormData();
+    files.forEach((file) => {
+      formData.append("photos", file);
+    });
+
+    const url = `${API_BASE}/albums/${albumId}/photos`;
+    const headers: HeadersInit = {};
+
+    if (this.token) {
+      headers.Authorization = `Bearer ${this.token}`;
+    }
+
+    const response = await fetch(url, {
       method: "POST",
-      body: JSON.stringify({ files: files.map((f) => f.name) }),
-    })
+      headers,
+      body: formData,
+    });
+
+    return response.json();
   }
 
-  async updatePhoto(photoId: string, data: Partial<Photo>) {
-    return this.request<Photo>(`/me/photos/${photoId}`, {
+  async updatePhoto(photoId: number, data: Partial<Photo>) {
+    return this.request<Photo>(`/photos/${photoId}`, {
       method: "PATCH",
       body: JSON.stringify(data),
-    })
+    });
   }
 
-  async deletePhoto(photoId: string) {
-    return this.request(`/me/photos/${photoId}`, {
+  async deletePhoto(photoId: number) {
+    return this.request(`/photos/${photoId}`, {
       method: "DELETE",
-    })
+    });
   }
 
   // Admin routes
   async getAdminStats() {
-    return this.request("/admin/stats")
+    return this.request("/admin/stats");
+  }
+
+  async getAuditLogs() {
+    return this.request("/admin/audit-logs");
   }
 
   async getUsers() {
-    return this.request("/admin/users")
+    return this.request("/admin/users");
   }
 
-  async createClub(data: { name: string; slug: string; logo: string; bio: string; quota: number }) {
+  async getAllClubs() {
+    return this.request<Club[]>("/admin/clubs");
+  }
+
+  async createClub(data: {
+    name: string;
+    logoUrl?: string;
+    bio?: string;
+    storageQuotaMb: number;
+  }) {
     return this.request<Club>("/admin/clubs", {
       method: "POST",
       body: JSON.stringify(data),
-    })
+    });
+  }
+
+  async updateClub(clubId: number, data: Partial<Club>) {
+    return this.request<Club>(`/admin/clubs/${clubId}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteClub(clubId: number) {
+    return this.request(`/admin/clubs/${clubId}`, {
+      method: "DELETE",
+    });
+  }
+
+  async createUser(clubId: number, data: { email: string; password: string }) {
+    return this.request(`/admin/clubs/${clubId}/users`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateUser(userId: number, data: Partial<User>) {
+    return this.request<User>(`/admin/users/${userId}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteUser(userId: number) {
+    return this.request(`/admin/users/${userId}`, {
+      method: "DELETE",
+    });
   }
 }
 
-export const api = new ApiClient()
+export const api = new ApiClient();

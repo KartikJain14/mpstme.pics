@@ -1,64 +1,66 @@
 export interface User {
-  id: string
-  email: string
-  role: "superadmin" | "clubadmin"
-  clubId?: string
-  createdAt: string
-  updatedAt: string
+  id: number;
+  email: string;
+  role: "superadmin" | "clubadmin";
+  clubId?: number;
+  createdAt: string;
+  updatedAt?: string;
 }
 
 export interface Club {
-  id: string
-  name: string
-  slug: string
-  logo: string
-  bio: string
-  quota: number // in MB
-  quotaUsed: number // in MB
-  memberCount: number
-  createdAt: string
-  updatedAt: string
+  id: number;
+  name: string;
+  slug: string;
+  logoUrl?: string;
+  bio?: string;
+  storageQuotaMb: number;
+  createdAt: string;
+  // Computed fields that may be added by frontend or backend
+  logo?: string;
+  quota?: number;
+  quotaUsed?: number;
+  memberCount?: number;
+  updatedAt?: string;
 }
 
 export interface Album {
-  id: string
-  clubId: string
-  name: string
-  slug: string
-  description?: string
-  isPublic: boolean
-  photoCount: number
-  coverImage?: string
-  createdAt: string
-  updatedAt: string
+  id: number;
+  clubId: number;
+  name: string;
+  slug: string;
+  isPublic: boolean;
+  deleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+  // Optional computed fields that may be added by backend
+  description?: string;
+  coverImage?: string;
+  photoCount?: number;
 }
 
 export interface Photo {
-  id: string
-  albumId: string
-  clubId: string
-  filename: string
-  originalName: string
-  size: number // in bytes
-  mimeType: string
-  isPublic: boolean
-  caption?: string
-  uploadedAt: string
+  id: number;
+  albumId: number;
+  fileKey: string;
+  sizeInBytes: number;
+  s3Url: string;
+  isPublic: boolean;
+  deleted: boolean;
+  uploadedAt: string;
 }
 
 export interface AuditLog {
-  id: string
-  actor: string
-  action: string
-  target: string
-  targetId: string
-  metadata?: Record<string, any>
-  timestamp: string
+  id: number;
+  actorId: number;
+  action: string;
+  targetTable: string;
+  targetId: number;
+  timestamp: string;
 }
 
 export interface ApiResponse<T = any> {
-  success: boolean
-  data?: T
-  error?: string
-  message?: string
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
 }

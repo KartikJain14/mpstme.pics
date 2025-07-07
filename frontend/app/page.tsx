@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { LogoutButton } from "@/components/logout-button";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState } from "react";
+import { api } from "@/lib/api";
 import type { Club } from "@/lib/types";
 
 export default function HomePage() {
@@ -13,108 +14,36 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Enhanced dummy data with more clubs
-    const dummyClubs = [
-      {
-        id: "club-1",
-        name: "Computer Society of India",
-        slug: "csi",
-        logo: "CSI",
-        bio: "Technology and Innovation Club",
-        quota: 5000,
-        quotaUsed: 1247,
-        memberCount: 120,
-        createdAt: "2024-01-01T00:00:00Z",
-        updatedAt: "2024-03-15T00:00:00Z",
-      },
-      {
-        id: "club-2",
-        name: "IEEE Student Branch",
-        slug: "ieee",
-        logo: "IEEE",
-        bio: "Electrical and Electronics Engineering",
-        quota: 3000,
-        quotaUsed: 892,
-        memberCount: 95,
-        createdAt: "2024-01-02T00:00:00Z",
-        updatedAt: "2024-02-20T00:00:00Z",
-      },
-      {
-        id: "club-3",
-        name: "ACM Student Chapter",
-        slug: "acm",
-        logo: "ACM",
-        bio: "Computing and Programming",
-        quota: 2000,
-        quotaUsed: 456,
-        memberCount: 85,
-        createdAt: "2024-01-03T00:00:00Z",
-        updatedAt: "2024-01-10T00:00:00Z",
-      },
-      {
-        id: "club-4",
-        name: "Robotics Club",
-        slug: "robotics",
-        logo: "ROB",
-        bio: "Automation and Robotics",
-        quota: 4000,
-        quotaUsed: 1876,
-        memberCount: 67,
-        createdAt: "2024-01-04T00:00:00Z",
-        updatedAt: "2024-03-10T00:00:00Z",
-      },
-      {
-        id: "club-5",
-        name: "Photography Club",
-        slug: "photography",
-        logo: "PHOTO",
-        bio: "Visual Arts and Photography",
-        quota: 8000,
-        quotaUsed: 3456,
-        memberCount: 143,
-        createdAt: "2024-01-05T00:00:00Z",
-        updatedAt: "2024-03-20T00:00:00Z",
-      },
-      {
-        id: "club-6",
-        name: "Drama Society",
-        slug: "drama",
-        logo: "DRAMA",
-        bio: "Theatre and Performing Arts",
-        quota: 2500,
-        quotaUsed: 789,
-        memberCount: 78,
-        createdAt: "2024-01-06T00:00:00Z",
-        updatedAt: "2024-02-15T00:00:00Z",
-      },
-      {
-        id: "club-7",
-        name: "Music Society",
-        slug: "music",
-        logo: "MUSIC",
-        bio: "Harmonizing Talents and Musical Diversity",
-        quota: 3500,
-        quotaUsed: 1234,
-        memberCount: 92,
-        createdAt: "2024-01-07T00:00:00Z",
-        updatedAt: "2024-03-05T00:00:00Z",
-      },
-      {
-        id: "club-8",
-        name: "Literary Society",
-        slug: "literary",
-        logo: "LIT",
-        bio: "Creative Writing and Literature",
-        quota: 1500,
-        quotaUsed: 234,
-        memberCount: 56,
-        createdAt: "2024-01-08T00:00:00Z",
-        updatedAt: "2024-02-28T00:00:00Z",
-      },
-    ];
+    const fetchClubs = async () => {
+      try {
+        const response = await api.getAllPublicClubs();
+        if (response.success && response.data) {
+          // Transform backend data to include computed fields for UI
+          const transformedClubs = response.data.map((club, index) => ({
+            ...club,
+            logo: club.name
+              .split(" ")
+              .map((word) => word[0])
+              .join("")
+              .substring(0, 4)
+              .toUpperCase(),
+            quota: club.storageQuotaMb,
+            quotaUsed: Math.floor(Math.random() * club.storageQuotaMb * 0.8), // Mock usage data
+            memberCount: 50 + Math.floor(Math.random() * 100), // Mock member count
+            updatedAt: club.createdAt,
+          }));
+          setClubs(transformedClubs);
+        }
+      } catch (error) {
+        console.error("Failed to fetch clubs:", error);
+        // Fallback to empty array on error
+        setClubs([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    setClubs(dummyClubs);
-    setLoading(false);
+    fetchClubs();
   }, []);
 
   if (loading) {
@@ -215,7 +144,8 @@ export default function HomePage() {
                 <span className="font-medium text-blue-700">
                   {clubs
                     .reduce(
-                      (acc, club) => acc + Math.floor(club.quotaUsed / 100),
+                      (acc, club) =>
+                        acc + Math.floor((club.quotaUsed || 0) / 100),
                       0
                     )
                     .toString()
@@ -245,13 +175,13 @@ export default function HomePage() {
                       {(index + 1).toString().padStart(2, "0")}
                     </div>
                     <div className="w-12 h-12 bg-foreground text-background flex items-center justify-center font-mono text-lg font-medium group-hover:bg-blue-300 group-hover:text-blue-900 transition-colors">
-                      {club.logo}
+                      {club.logo || club.name.substring(0, 3).toUpperCase()}
                     </div>
                   </div>
                   <div className="text-right space-y-1">
                     <div className="text-xs font-mono text-muted-foreground">
                       <span className="text-blue-600">
-                        {Math.floor(club.quotaUsed / 100)
+                        {Math.floor((club.quotaUsed || 0) / 100)
                           .toString()
                           .padStart(2, "0")}
                       </span>{" "}
@@ -259,7 +189,7 @@ export default function HomePage() {
                     </div>
                     <div className="text-xs font-mono text-muted-foreground">
                       <span className="text-emerald-600">
-                        {club.memberCount.toString().padStart(2, "0")}
+                        {(club.memberCount || 0).toString().padStart(2, "0")}
                       </span>{" "}
                       Members
                     </div>
@@ -272,7 +202,7 @@ export default function HomePage() {
                     {club.name}
                   </h3>
                   <p className="text-sm text-muted-foreground leading-relaxed font-light">
-                    {club.bio}
+                    {club.bio || "No description available"}
                   </p>
                 </div>
 
