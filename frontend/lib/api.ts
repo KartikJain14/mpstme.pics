@@ -1,6 +1,6 @@
 import type { User, Club, Album, Photo, ApiResponse } from "./types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL; // Use Next.js proxy instead of direct backend URL
+const API_BASE = "/api"; // Use Next.js proxy
 
 class ApiClient {
   private token: string | null = null;
@@ -47,7 +47,13 @@ class ApiClient {
     if (response.success && response.data) {
       this.token = response.data.token;
       localStorage.setItem("auth_token", response.data.token);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
+
+      // Ensure user data exists before storing
+      if (response.data.user) {
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+      } else {
+        console.error("Login response missing user data:", response);
+      }
     }
 
     return response;
@@ -62,7 +68,19 @@ class ApiClient {
   getCurrentUser(): User | null {
     if (typeof window === "undefined") return null;
     const userStr = localStorage.getItem("user");
-    return userStr ? JSON.parse(userStr) : null;
+
+    if (!userStr || userStr === "undefined" || userStr === "null") {
+      return null;
+    }
+
+    try {
+      return JSON.parse(userStr);
+    } catch (error) {
+      console.error("Failed to parse user from localStorage:", error);
+      // Clear invalid data
+      localStorage.removeItem("user");
+      return null;
+    }
   }
 
   // Public routes
@@ -71,17 +89,33 @@ class ApiClient {
   }
 
   async getPublicClub(clubSlug: string) {
-    return this.request<{ club: Club; albums: Album[] }>(`/club/${clubSlug}`);
+    return this.request<{ club: Club; publicAlbums: Album[] }>(
+      `/club/${clubSlug}`
+    );
   }
 
   async getPublicAlbum(clubSlug: string, albumSlug: string) {
-    return this.request<{ club: Club; album: Album; photos: Photo[] }>(
+    return this.request<{ album: Album; photos: Photo[] }>(
       `/club/${clubSlug}/${albumSlug}`
     );
   }
 
   async getPublicPhoto(clubSlug: string, albumSlug: string, photoId: number) {
     return this.request<any>(`/club/${clubSlug}/${albumSlug}/photo/${photoId}`);
+  }
+
+  // Helper function to generate photo URL for direct image access
+  getPhotoUrl(clubSlug: string, albumSlug: string, photoId: number): string {
+    return `${API_BASE}/club/${clubSlug}/${albumSlug}/photo/${photoId}`;
+  }
+
+  // Helper function to generate admin photo URL for authenticated access
+  getAdminPhotoUrl(photoId: number): string {
+    const token = this.token || localStorage.getItem("auth_token");
+    if (token) {
+      return `${API_BASE}/photos/${photoId}?token=${encodeURIComponent(token)}`;
+    }
+    return `${API_BASE}/photos/${photoId}`;
   }
 
   // Club admin routes
@@ -111,6 +145,10 @@ class ApiClient {
     return this.request(`/me/albums/${albumId}`, {
       method: "DELETE",
     });
+  }
+
+  async getAlbum(albumId: number) {
+    return this.request<Album>(`/me/albums/${albumId}`);
   }
 
   async getAlbumPhotos(albumId: number) {
@@ -143,6 +181,12 @@ class ApiClient {
     return this.request<Photo>(`/photos/${photoId}`, {
       method: "PATCH",
       body: JSON.stringify(data),
+    });
+  }
+
+  async togglePhotoVisibility(photoId: number) {
+    return this.request<Photo>(`/photos/${photoId}`, {
+      method: "PATCH",
     });
   }
 

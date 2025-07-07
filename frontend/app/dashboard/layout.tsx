@@ -15,13 +15,25 @@ import {
   Plus,
   ImageIcon,
   BarChart3,
+  Users,
+  Building2,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
-const navigation = [
-  { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+// Navigation for Club Admins
+const clubAdminNavigation = [
+  { name: "Overview", href: "/dashboard/clubadmin", icon: LayoutDashboard },
   { name: "Albums", href: "/dashboard/albums", icon: FolderOpen },
   { name: "Photos", href: "/dashboard/photos", icon: ImageIcon },
+  { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
+  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+];
+
+// Navigation for Super Admins
+const superAdminNavigation = [
+  { name: "Overview", href: "/dashboard/superadmin", icon: LayoutDashboard },
+  { name: "Clubs", href: "/dashboard/clubs", icon: Building2 },
+  { name: "Users", href: "/dashboard/users", icon: Users },
   { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
@@ -33,6 +45,10 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const { user } = useAuth();
+
+  // Get navigation based on user role
+  const navigation =
+    user?.role === "superadmin" ? superAdminNavigation : clubAdminNavigation;
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -46,24 +62,51 @@ export default function DashboardLayout({
           >
             mpstme.pics
           </Link>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold rounded-lg">
-              CSI
-            </div>
+          {user?.role === "superadmin" ? (
             <div>
-              <h2 className="font-semibold text-foreground">CSI Admin</h2>
-              <p className="text-xs text-muted-foreground">Computer Society</p>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-red-600 text-white flex items-center justify-center text-sm font-semibold rounded-lg">
+                  SA
+                </div>
+                <div>
+                  <h2 className="font-semibold text-foreground">Super Admin</h2>
+                  <p className="text-xs text-muted-foreground">
+                    System Administrator
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mt-3">
+                <Badge
+                  variant="secondary"
+                  className="bg-red-50 text-red-700 border-red-200"
+                >
+                  Super Admin
+                </Badge>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-2 mt-3">
-            <Badge
-              variant="secondary"
-              className="bg-green-50 text-green-700 border-green-200"
-            >
-              Active
-            </Badge>
-            <Badge variant="secondary">120 members</Badge>
-          </div>
+          ) : (
+            <div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold rounded-lg">
+                  {user?.clubId ? "CA" : "??"}
+                </div>
+                <div>
+                  <h2 className="font-semibold text-foreground">Club Admin</h2>
+                  <p className="text-xs text-muted-foreground">
+                    Club Management
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 mt-3">
+                <Badge
+                  variant="secondary"
+                  className="bg-green-50 text-green-700 border-green-200"
+                >
+                  Active
+                </Badge>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Navigation */}
@@ -118,18 +161,40 @@ export default function DashboardLayout({
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-semibold text-foreground">
-                Dashboard
+                {user?.role === "superadmin"
+                  ? "Admin Dashboard"
+                  : "Club Dashboard"}
               </h1>
               <p className="text-muted-foreground mt-1">
-                Manage your club's photo gallery and content
+                {user?.role === "superadmin"
+                  ? "Manage clubs, users, and system settings"
+                  : "Manage your club's photo gallery and content"}
               </p>
             </div>
-            <Link href="/dashboard/albums/new">
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                <Plus className="w-4 h-4 mr-2" />
-                Create album
-              </Button>
-            </Link>
+            {user?.role === "clubadmin" && (
+              <Link href="/dashboard/albums/new">
+                <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create album
+                </Button>
+              </Link>
+            )}
+            {user?.role === "superadmin" && (
+              <div className="flex gap-2">
+                <Link href="/dashboard/clubs/new">
+                  <Button variant="outline">
+                    <Plus className="w-4 h-4 mr-2" />
+                    New Club
+                  </Button>
+                </Link>
+                <Link href="/dashboard/users/new">
+                  <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                    <Plus className="w-4 h-4 mr-2" />
+                    New User
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </header>
 

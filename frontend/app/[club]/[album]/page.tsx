@@ -16,7 +16,6 @@ import Image from "next/image";
 import { useAuth } from "@/hooks/use-auth";
 import { api } from "@/lib/api";
 import type { Club, Album, Photo } from "@/lib/types";
-import { use } from "react";
 
 export default function AlbumPage({
   params,
@@ -30,14 +29,23 @@ export default function AlbumPage({
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { club: clubSlug, album: albumSlug } = use(params);
+  const clubSlug = params.club;
+  const albumSlug = params.album;
 
   useEffect(() => {
     const fetchAlbumData = async () => {
       try {
         const response = await api.getPublicAlbum(clubSlug, albumSlug);
+        console.log(response);
         if (response.success && response.data) {
-          setClub(response.data.club);
+          // Create a minimal club object from the slug since backend doesn't return club data
+          setClub({
+            id: 0,
+            name: clubSlug,
+            slug: clubSlug,
+            storageQuotaMb: 0,
+            createdAt: new Date().toISOString(),
+          });
           setAlbum(response.data.album);
           setPhotos(response.data.photos);
         } else {
@@ -164,7 +172,7 @@ export default function AlbumPage({
             </Link>
             <span className="mx-3 text-muted-foreground/40">/</span>
             <Link
-              href={`/${params.club}`}
+              href={`/${clubSlug}`}
               className="text-muted-foreground hover:text-blue-600 transition-colors"
             >
               {club.name.toUpperCase()}
@@ -186,9 +194,11 @@ export default function AlbumPage({
                 {album.name}
               </h1>
               <div className="w-16 h-px bg-blue-300"></div>
-              <p className="text-xl font-light text-muted-foreground leading-relaxed max-w-2xl">
-                {album.description}
-              </p>
+              {album.description && (
+                <p className="text-xl font-light text-muted-foreground leading-relaxed max-w-2xl">
+                  {album.description}
+                </p>
+              )}
             </div>
           </div>
 
@@ -204,7 +214,9 @@ export default function AlbumPage({
               <div className="space-y-2">
                 <div className="text-muted-foreground">CREATED</div>
                 <div className="text-lg font-medium text-purple-600">
-                  {new Date(album.createdAt).getFullYear()}
+                  {album.createdAt
+                    ? new Date(album.createdAt).getFullYear()
+                    : new Date().getFullYear()}
                 </div>
               </div>
             </div>
@@ -236,12 +248,17 @@ export default function AlbumPage({
                   className="aspect-square bg-background hover:bg-blue-50/50 transition-colors duration-200 group relative overflow-hidden"
                 >
                   <Image
-                    src={`/placeholder.svg?height=400&width=400&text=${index + 1
-                      }`}
-                    alt={photo.caption || `Photo ${index + 1}`}
+                    src={api.getPhotoUrl(clubSlug, albumSlug, photo.id)}
+                    alt={`Photo ${index + 1}`}
                     width={400}
                     height={400}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => {
+                      // Fallback to placeholder if image fails to load
+                      e.currentTarget.src = `/placeholder.svg?height=400&width=400&text=${
+                        index + 1
+                      }`;
+                    }}
                   />
                   <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="text-xs font-mono text-white bg-black/60 px-2 py-1 backdrop-blur-sm">
@@ -272,14 +289,6 @@ export default function AlbumPage({
       <Dialog open={selectedPhoto !== null} onOpenChange={closeLightbox}>
         <DialogContent className="max-w-7xl w-full h-[95vh] p-0 border-none bg-background rounded-none overflow-hidden">
           <div className="relative w-full h-full flex items-center justify-center bg-muted/5">
-            {/* Close Button */}
-            <button
-              onClick={closeLightbox}
-              className="absolute top-8 right-8 z-10 w-12 h-12 bg-background/80 backdrop-blur-sm border border-border hover:bg-background hover:border-foreground/20 flex items-center justify-center transition-all duration-200"
-            >
-              <X className="w-5 h-5 text-foreground" />
-            </button>
-
             {/* Navigation Buttons */}
             {photos.length > 1 && (
               <>
@@ -303,15 +312,21 @@ export default function AlbumPage({
             {selectedPhotoData && (
               <div className="max-w-full max-h-full p-16">
                 <Image
-                  src={`/placeholder.svg?height=1200&width=1200&text=${(selectedPhoto || 0) + 1
-                    }`}
-                  alt={
-                    selectedPhotoData.caption ||
-                    `Photo ${(selectedPhoto || 0) + 1}`
-                  }
+                  src={api.getPhotoUrl(
+                    clubSlug,
+                    albumSlug,
+                    selectedPhotoData.id
+                  )}
+                  alt={`Photo ${(selectedPhoto || 0) + 1}`}
                   width={1600}
                   height={1600}
                   className="max-w-full max-h-full object-contain"
+                  onError={(e) => {
+                    // Fallback to placeholder if image fails to load
+                    e.currentTarget.src = `/placeholder.svg?height=1200&width=1200&text=${
+                      (selectedPhoto || 0) + 1
+                    }`;
+                  }}
                 />
               </div>
             )}
@@ -322,8 +337,7 @@ export default function AlbumPage({
                 <div className="flex items-start justify-between">
                   <div className="space-y-2">
                     <p className="text-sm font-light text-foreground">
-                      {selectedPhotoData.caption ||
-                        selectedPhotoData.originalName}
+                      Photo {(selectedPhoto || 0) + 1}
                     </p>
                     <p className="text-xs font-mono text-muted-foreground">
                       Uploaded{" "}

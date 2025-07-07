@@ -19,19 +19,20 @@ export interface Club {
   logo?: string;
   quota?: number;
   quotaUsed?: number;
+  storageUsedMb?: number;
   memberCount?: number;
   updatedAt?: string;
 }
 
 export interface Album {
   id: number;
-  clubId: number;
+  clubId?: number;
   name: string;
   slug: string;
-  isPublic: boolean;
-  deleted: boolean;
-  createdAt: string;
-  updatedAt: string;
+  isPublic?: boolean;
+  deleted?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
   // Optional computed fields that may be added by backend
   description?: string;
   coverImage?: string;
@@ -40,12 +41,13 @@ export interface Album {
 
 export interface Photo {
   id: number;
-  albumId: number;
-  fileKey: string;
-  sizeInBytes: number;
-  s3Url: string;
-  isPublic: boolean;
-  deleted: boolean;
+  albumId?: number;
+  fileName: string;
+  fileKey?: string;
+  sizeInBytes?: number;
+  s3Url?: string;
+  isPublic?: boolean;
+  deleted?: boolean;
   uploadedAt: string;
 }
 
