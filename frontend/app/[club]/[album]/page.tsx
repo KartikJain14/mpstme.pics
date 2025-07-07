@@ -16,6 +16,7 @@ import Image from "next/image";
 import { useAuth } from "@/hooks/use-auth";
 import { api } from "@/lib/api";
 import type { Club, Album, Photo } from "@/lib/types";
+import { use } from "react";
 
 export default function AlbumPage({
   params,
@@ -29,11 +30,12 @@ export default function AlbumPage({
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { club: clubSlug, album: albumSlug } = use(params);
 
   useEffect(() => {
     const fetchAlbumData = async () => {
       try {
-        const response = await api.getPublicAlbum(params.club, params.album);
+        const response = await api.getPublicAlbum(clubSlug, albumSlug);
         if (response.success && response.data) {
           setClub(response.data.club);
           setAlbum(response.data.album);
@@ -49,7 +51,7 @@ export default function AlbumPage({
     };
 
     fetchAlbumData();
-  }, [params.club, params.album]);
+  }, [clubSlug, albumSlug]);
 
   const openLightbox = (photoIndex: number) => {
     setSelectedPhoto(photoIndex);
@@ -98,7 +100,7 @@ export default function AlbumPage({
               {error || "The requested album could not be found."}
             </p>
           </div>
-          <Link href={`/${params.club}`}>
+          <Link href={`/${clubSlug}`}>
             <Button variant="ghost" className="font-mono text-xs">
               ← BACK TO CLUB
             </Button>
@@ -234,9 +236,8 @@ export default function AlbumPage({
                   className="aspect-square bg-background hover:bg-blue-50/50 transition-colors duration-200 group relative overflow-hidden"
                 >
                   <Image
-                    src={`/placeholder.svg?height=400&width=400&text=${
-                      index + 1
-                    }`}
+                    src={`/placeholder.svg?height=400&width=400&text=${index + 1
+                      }`}
                     alt={photo.caption || `Photo ${index + 1}`}
                     width={400}
                     height={400}
@@ -302,9 +303,8 @@ export default function AlbumPage({
             {selectedPhotoData && (
               <div className="max-w-full max-h-full p-16">
                 <Image
-                  src={`/placeholder.svg?height=1200&width=1200&text=${
-                    (selectedPhoto || 0) + 1
-                  }`}
+                  src={`/placeholder.svg?height=1200&width=1200&text=${(selectedPhoto || 0) + 1
+                    }`}
                   alt={
                     selectedPhotoData.caption ||
                     `Photo ${(selectedPhoto || 0) + 1}`

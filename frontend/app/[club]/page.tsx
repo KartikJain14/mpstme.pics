@@ -18,6 +18,8 @@ export default function ClubPage({ params }: { params: { club: string } }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { club: clubSlug } = use(params);
+  const [coverPhotos, setCoverPhotos] = useState<Record<number, string>>({});
+
 
   useEffect(() => {
     const fetchClubData = async () => {
@@ -28,6 +30,31 @@ export default function ClubPage({ params }: { params: { club: string } }) {
           console.log("Club data:", response.data.club);
           setAlbums(response.data.publicAlbums || []);
           console.log("Albums data:", response.data);
+          if (response.data.publicAlbums?.length) {
+            const photoMap: Record<number, string> = {};
+
+            await Promise.all(
+              response.data.publicAlbums.map(async (album: Album) => {
+                if (album.firstImage != null) {
+                  try {
+                    console.log("Fetching photo for album:", album.slug);
+                    // Fetch the first image for the album
+                    console.log("Album firstImage ID:", album.firstImage);
+                    const photo = await api.getPublicPhoto(clubSlug, album.slug, album.firstImage);
+                    console.log("Fetched photo for album:", album.slug, photo);
+                    if (photo?.success && photo?.data?.url) {
+                      photoMap[album.id] = photo.data.url;
+                    }
+                  } catch (err) {
+                    console.error("Error fetching photo for album:", album.slug, err);
+                  }
+                }
+              })
+            );
+
+            setCoverPhotos(photoMap);
+          }
+
         } else {
           setError("Club not found");
         }
@@ -206,19 +233,18 @@ export default function ClubPage({ params }: { params: { club: string } }) {
                 {albums.map((album, index) => (
                   <Link
                     key={album.id}
-                    href={`/${params.club}/${album.slug}`}
+                    href={`/${clubSlug}/${album.slug}`}
                     className="group bg-background hover:bg-blue-50/30 transition-colors duration-200"
                   >
                     <div className="p-8 space-y-6">
                       {/* Image */}
                       <div className="aspect-[4/3] bg-muted/20 relative overflow-hidden">
                         <img
-                          src={
-                            album.coverImage ||
-                            "/placeholder.svg?height=240&width=320&text=Album"
-                          }
-                          alt={album.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          src=
+                            {`${process.env.NEXT_PUBLIC_API_URL}/club/${clubSlug}/${album.slug}/photo/${album.firstImage}`}
+                          
+                        alt={album.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                         <div className="absolute top-4 left-4">
                           <div className="text-xs font-mono text-white bg-black/40 px-2 py-1 backdrop-blur-sm">
