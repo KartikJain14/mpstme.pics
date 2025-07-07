@@ -49,7 +49,28 @@ export async function getPublicAlbumsForClub(clubSlug: string) {
             ),
         );
 
-    return { club, publicAlbums: albumsResult };
+    const publicAlbums = await Promise.all(
+        albumsResult.map(async (album) => {
+            const firstImage = await db
+                .select({ fileKey: photos.fileKey })
+                .from(photos)
+                .where(
+                    and(
+                        eq(photos.albumId, album.id),
+                        eq(photos.isPublic, true),
+                        eq(photos.deleted, false),
+                    ),
+                )
+                .orderBy(photos.uploadedAt)
+                .limit(1);
+            return {
+                ...album,
+                firstImage: firstImage[0]?.fileKey || null,
+            };
+        })
+    );
+
+    return { club, publicAlbums };
 }
 
 export async function getPublicAlbumWithPhotos(
