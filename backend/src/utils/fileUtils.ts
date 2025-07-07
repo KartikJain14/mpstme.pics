@@ -65,7 +65,7 @@ export async function getPublicAlbumsForClub(clubSlug: string) {
                 .limit(1);
             return {
                 ...album,
-                firstImage: firstImage[0]?.fileKey || null,
+                firstImage: firstImage[0]?.id || null,
             };
         })
     );
