@@ -52,14 +52,14 @@ export async function getPublicAlbumsForClub(clubSlug: string) {
     const publicAlbums = await Promise.all(
         albumsResult.map(async (album) => {
             const firstImage = await db
-                .select({ fileKey: photos.fileKey })
+                .select({ id: photos.id })
                 .from(photos)
                 .where(
                     and(
                         eq(photos.albumId, album.id),
                         eq(photos.isPublic, true),
-                        eq(photos.deleted, false),
-                    ),
+                        eq(photos.deleted, false)
+                    )
                 )
                 .orderBy(photos.uploadedAt)
                 .limit(1);
