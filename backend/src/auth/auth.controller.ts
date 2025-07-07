@@ -53,3 +53,28 @@ export const login = async (req: any, res: any) => {
         data: { token },
     });
 };
+
+export const getUser = async (req: any, res: any) => {
+    const userId = req.user.id;
+
+    const [user] = await db.select().from(users).where(eq(users.id, userId));
+    if (!user)
+        return res.status(404).json({
+            success: false,
+            message: null,
+            error: "User not found",
+            data: null,
+        });
+
+    res.json({
+        success: true,
+        message: "User fetched successfully",
+        error: null,
+        data: {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            clubId: user.clubId,
+        },
+    });
+};
