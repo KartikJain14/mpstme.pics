@@ -127,12 +127,11 @@ export const servePublicPhoto = async (req: any, res: any) => {
         const chunks: Buffer[] = [];
         for await (const chunk of data.Body as any) { chunks.push(chunk); }
         const buffer = Buffer.concat(chunks);
-        // Cache in Redis for 7 days
-        await redis.set(cacheKey, buffer, "EX", 60 * 60 * 24 * 7);
         res.setHeader("Content-Type", data.ContentType || "application/octet-stream");
         res.setHeader("Content-Length", buffer.length.toString());
         res.setHeader("Cache-Control", "public, max-age=3600");
-        return res.end(buffer);
+        res.end(buffer);
+        redis.set(cacheKey, buffer, "EX", 60 * 60 * 24 * 7);
     } catch (err) {
         console.error(err);
         res.status(500).json({
@@ -173,12 +172,11 @@ export const proxyClubLogo = async (req: any, res: any) => {
         const chunks: Buffer[] = [];
         for await (const chunk of data.Body as any) { chunks.push(chunk); }
         const buffer = Buffer.concat(chunks);
-        // Cache in Redis for 7 days
-        await redis.set(cacheKey, buffer, "EX", 60 * 60 * 24 * 7);
         res.setHeader("Content-Type", data.ContentType || "application/octet-stream");
         res.setHeader("Content-Length", buffer.length.toString());
         res.setHeader("Cache-Control", "public, max-age=3600");
-        return res.end(buffer);
+        res.end(buffer);
+        redis.set(cacheKey, buffer, "EX", 60 * 60 * 24 * 7);
     } catch (err) {
         console.error(err);
         res.status(500).json({
