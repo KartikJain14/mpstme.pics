@@ -25,7 +25,7 @@ export const clubLogoUpload = multer({
                     .replace(/[^a-z0-9]+/g, "-")
                     .replace(/(^-|-$)/g, "");
                 const filename = generateFilename(file.originalname);
-                const fullKey = `clubs/${slug}/logo/${filename}`;
+                const fullKey = `${slug}/logo/${filename}`;
                 cb(null, fullKey);
             } catch (err) {
                 cb(err as Error, "");
