@@ -29,7 +29,6 @@ export default function HomePage() {
               .toUpperCase(),
             quota: club.storageQuotaMb,
             quotaUsed: Math.floor(Math.random() * club.storageQuotaMb * 0.8), // Mock usage data
-            memberCount: 50 + Math.floor(Math.random() * 100), // Mock member count
             updatedAt: club.createdAt,
           }));
           setClubs(transformedClubs);
@@ -186,12 +185,6 @@ export default function HomePage() {
                           .padStart(2, "0")}
                       </span>{" "}
                       Albums
-                    </div>
-                    <div className="text-xs font-mono text-muted-foreground">
-                      <span className="text-emerald-600">
-                        {(club.memberCount || 0).toString().padStart(2, "0")}
-                      </span>{" "}
-                      Members
                     </div>
                   </div>
                 </div>
