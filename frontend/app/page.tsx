@@ -29,6 +29,7 @@ export default function HomePage() {
               .toUpperCase(),
             quota: club.storageQuotaMb,
             quotaUsed: Math.floor(Math.random() * club.storageQuotaMb * 0.8), // Mock usage data
+            albumCount: club.albumCount || 0,
             updatedAt: club.createdAt,
           }));
           setClubs(transformedClubs);
@@ -144,7 +145,7 @@ export default function HomePage() {
                   {clubs
                     .reduce(
                       (acc, club) =>
-                        acc + Math.floor((club.quotaUsed || 0) / 100),
+                        acc + (club.albumCount || 0),
                       0
                     )
                     .toString()
@@ -180,9 +181,7 @@ export default function HomePage() {
                   <div className="text-right space-y-1">
                     <div className="text-xs font-mono text-muted-foreground">
                       <span className="text-blue-600">
-                        {Math.floor((club.quotaUsed || 0) / 100)
-                          .toString()
-                          .padStart(2, "0")}
+                        {club.albumCount?.toString().padStart(3, "0") || "00"}
                       </span>{" "}
                       Albums
                     </div>

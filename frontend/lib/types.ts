@@ -22,6 +22,7 @@ export interface Club {
   storageUsedMb?: number;
   memberCount?: number;
   updatedAt?: string;
+  albumCount?: number;
 }
 
 export interface Album {
