@@ -9,6 +9,7 @@ import {
     getPublicAlbumWithPhotos,
 } from "../utils/fileUtils";
 import { and, count, eq } from "drizzle-orm";
+import { redis } from "../config/redis";
 
 export const getAllPublicClubs = async (req: any, res: any) => {
     try {
@@ -102,12 +103,7 @@ export const getPublicAlbum = async (req: any, res: any) => {
 
 export const servePublicPhoto = async (req: any, res: any) => {
     const { clubSlug, albumSlug, photoId } = req.params;
-
-    const fileKey = await resolvePublicPhotoKey(
-        clubSlug,
-        albumSlug,
-        Number(photoId),
-    );
+    const fileKey = await resolvePublicPhotoKey(clubSlug, albumSlug, Number(photoId));
     if (!fileKey)
         return res.status(404).json({
             success: false,
@@ -115,24 +111,28 @@ export const servePublicPhoto = async (req: any, res: any) => {
             error: "Photo not found or not public",
             data: null,
         });
-
+    const cacheKey = `public-photo:${fileKey}`;
     try {
-        const command = new GetObjectCommand({
-            Bucket: env.S3_BUCKET_NAME,
-            Key: fileKey,
-        });
-
+        // Try Redis cache first
+        const cached = await redis.getBuffer(cacheKey);
+        if (cached) {
+            res.setHeader("Content-Type", "image/jpeg"); // Optionally store type in cache
+            res.setHeader("Content-Length", cached.length.toString());
+            res.setHeader("Cache-Control", "public, max-age=3600");
+            return res.end(cached);
+        }
+        const command = new GetObjectCommand({ Bucket: env.S3_BUCKET_NAME, Key: fileKey });
         const data = await s3.send(command);
-
-        res.setHeader(
-            "Content-Type",
-            data.ContentType || "application/octet-stream",
-        );
-        res.setHeader("Content-Length", data.ContentLength?.toString() || "");
-        res.setHeader("Cache-Control", "public, max-age=3600"); // optional
-
-        // @ts-ignore - Body is a readable stream
-        data.Body.pipe(res); // ✅ stream from backend to browser
+        // Buffer the stream
+        const chunks: Buffer[] = [];
+        for await (const chunk of data.Body as any) { chunks.push(chunk); }
+        const buffer = Buffer.concat(chunks);
+        // Cache in Redis for 7 days
+        await redis.set(cacheKey, buffer, "EX", 60 * 60 * 24 * 7);
+        res.setHeader("Content-Type", data.ContentType || "application/octet-stream");
+        res.setHeader("Content-Length", buffer.length.toString());
+        res.setHeader("Cache-Control", "public, max-age=3600");
+        return res.end(buffer);
     } catch (err) {
         console.error(err);
         res.status(500).json({
@@ -148,11 +148,7 @@ export const proxyClubLogo = async (req: any, res: any) => {
     const { clubSlug } = req.params;
     try {
         // Find the club by slug
-        const club = await db
-            .select()
-            .from(clubs)
-            .where(eq(clubs.slug, clubSlug))
-            .limit(1);
+        const club = await db.select().from(clubs).where(eq(clubs.slug, clubSlug)).limit(1);
         if (!club || club.length === 0 || !club[0].logoUrl) {
             return res.status(404).json({
                 success: false,
@@ -161,21 +157,28 @@ export const proxyClubLogo = async (req: any, res: any) => {
                 data: null,
             });
         }
-        // logoUrl is expected to be the S3 key (path in bucket)
         const logoKey = club[0].logoUrl;
-        const command = new GetObjectCommand({
-            Bucket: env.S3_BUCKET_NAME,
-            Key: logoKey,
-        });
+        const cacheKey = `club-logo:${logoKey}`;
+        // Try Redis cache first
+        const cached = await redis.getBuffer(cacheKey);
+        if (cached) {
+            res.setHeader("Content-Type", "image/png"); // Optionally store type in cache
+            res.setHeader("Content-Length", cached.length.toString());
+            res.setHeader("Cache-Control", "public, max-age=3600");
+            return res.end(cached);
+        }
+        const command = new GetObjectCommand({ Bucket: env.S3_BUCKET_NAME, Key: logoKey });
         const data = await s3.send(command);
-        res.setHeader(
-            "Content-Type",
-            data.ContentType || "application/octet-stream",
-        );
-        res.setHeader("Content-Length", data.ContentLength?.toString() || "");
+        // Buffer the stream
+        const chunks: Buffer[] = [];
+        for await (const chunk of data.Body as any) { chunks.push(chunk); }
+        const buffer = Buffer.concat(chunks);
+        // Cache in Redis for 7 days
+        await redis.set(cacheKey, buffer, "EX", 60 * 60 * 24 * 7);
+        res.setHeader("Content-Type", data.ContentType || "application/octet-stream");
+        res.setHeader("Content-Length", buffer.length.toString());
         res.setHeader("Cache-Control", "public, max-age=3600");
-        // @ts-ignore - Body is a readable stream
-        data.Body.pipe(res);
+        return res.end(buffer);
     } catch (err) {
         console.error(err);
         res.status(500).json({
