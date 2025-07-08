@@ -7,6 +7,7 @@ import {
     getAllClubs,
 } from "./clubs.controller";
 import { authenticate, requireRole } from "../auth/auth.middleware";
+import { clubLogoUpload } from "./logoUpload.middleware";
 
 const router = Router();
 
@@ -20,6 +21,7 @@ router.post(
     "/admin/clubs",
     authenticate,
     requireRole("superadmin"),
+    clubLogoUpload.single("logo"), // Accept file upload for logo
     createClub,
 );
 router.patch(

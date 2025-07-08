@@ -6,13 +6,15 @@ import { eq, sum } from "drizzle-orm";
 import { albums, photos } from "../db/schema";
 
 export const createClub = async (req: any, res: any) => {
+    // Accept file upload for logo as req.file
+    const hasLogoFile = !!req.file;
+    // Accept text fields from form-data or JSON
     const bodySchema = z.object({
         name: z.string().min(2),
-        logoUrl: z.string().url().optional(),
         bio: z.string().optional(),
-        storageQuotaMb: z.number().int().positive().optional(),
+        storageQuotaMb: z.coerce.number().int().positive().optional(),
     });
-
+    // If multipart, fields are in req.body as strings
     const parsed = bodySchema.safeParse(req.body);
     if (!parsed.success) {
         return res
@@ -24,10 +26,8 @@ export const createClub = async (req: any, res: any) => {
                 data: null,
             });
     }
-
-    const { name, logoUrl, bio, storageQuotaMb } = parsed.data;
+    const { name, bio, storageQuotaMb } = parsed.data;
     const slug = generateSlug(name);
-
     const [existing] = await db
         .select()
         .from(clubs)
@@ -41,7 +41,12 @@ export const createClub = async (req: any, res: any) => {
                 error: `Slug ${slug} already exists`,
                 data: null,
             });
-
+    let logoUrl: string | undefined = undefined;
+    if (hasLogoFile && req.file?.location) {
+        logoUrl = req.file.location;
+    } else if (req.body.logoUrl && z.string().url().safeParse(req.body.logoUrl).success) {
+        logoUrl = req.body.logoUrl;
+    }
     const [created] = await db
         .insert(clubs)
         .values({
@@ -52,7 +57,6 @@ export const createClub = async (req: any, res: any) => {
             storageQuotaMb,
         })
         .returning();
-
     res.status(201).json({
         success: true,
         message: "Club created",
