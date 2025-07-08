@@ -1,9 +1,9 @@
 import { Router } from "express";
 import {
-  getClubPublicPage,
-  getPublicAlbum,
-  servePublicPhoto,
-  getAllPublicClubs,
+    getClubPublicPage,
+    getPublicAlbum,
+    servePublicPhoto,
+    getAllPublicClubs,
 } from "./public.controller";
 
 const router = Router();

@@ -15,7 +15,7 @@ router.get(
     "/admin/clubs",
     authenticate,
     requireRole("superadmin"),
-    getAllClubs
+    getAllClubs,
 );
 router.post(
     "/admin/clubs",

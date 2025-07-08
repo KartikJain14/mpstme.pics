@@ -58,8 +58,8 @@ export async function getPublicAlbumsForClub(clubSlug: string) {
                     and(
                         eq(photos.albumId, album.id),
                         eq(photos.isPublic, true),
-                        eq(photos.deleted, false)
-                    )
+                        eq(photos.deleted, false),
+                    ),
                 )
                 .orderBy(photos.uploadedAt)
                 .limit(1);
@@ -67,7 +67,7 @@ export async function getPublicAlbumsForClub(clubSlug: string) {
                 ...album,
                 firstImage: firstImage[0]?.id || null,
             };
-        })
+        }),
     );
 
     return { club, publicAlbums };

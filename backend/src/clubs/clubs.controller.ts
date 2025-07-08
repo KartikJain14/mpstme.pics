@@ -17,14 +17,12 @@ export const createClub = async (req: any, res: any) => {
     // If multipart, fields are in req.body as strings
     const parsed = bodySchema.safeParse(req.body);
     if (!parsed.success) {
-        return res
-            .status(400)
-            .json({
-                success: false,
-                message: null,
-                error: parsed.error.format(),
-                data: null,
-            });
+        return res.status(400).json({
+            success: false,
+            message: null,
+            error: parsed.error.format(),
+            data: null,
+        });
     }
     const { name, bio, storageQuotaMb } = parsed.data;
     const slug = generateSlug(name);
@@ -33,18 +31,19 @@ export const createClub = async (req: any, res: any) => {
         .from(clubs)
         .where(eq(clubs.slug, slug));
     if (existing)
-        return res
-            .status(409)
-            .json({
-                success: false,
-                message: null,
-                error: `Slug ${slug} already exists`,
-                data: null,
-            });
+        return res.status(409).json({
+            success: false,
+            message: null,
+            error: `Slug ${slug} already exists`,
+            data: null,
+        });
     let logoUrl: string | undefined = undefined;
     if (hasLogoFile && req.file?.location) {
         logoUrl = req.file.location;
-    } else if (req.body.logoUrl && z.string().url().safeParse(req.body.logoUrl).success) {
+    } else if (
+        req.body.logoUrl &&
+        z.string().url().safeParse(req.body.logoUrl).success
+    ) {
         logoUrl = req.body.logoUrl;
     }
     const [created] = await db
@@ -77,14 +76,12 @@ export const updateClub = async (req: any, res: any) => {
 
     const parsed = bodySchema.safeParse(req.body);
     if (!parsed.success) {
-        return res
-            .status(400)
-            .json({
-                success: false,
-                message: null,
-                error: parsed.error.format(),
-                data: null,
-            });
+        return res.status(400).json({
+            success: false,
+            message: null,
+            error: parsed.error.format(),
+            data: null,
+        });
     }
 
     const updateData: any = { ...parsed.data };
@@ -99,14 +96,12 @@ export const updateClub = async (req: any, res: any) => {
         .returning();
 
     if (!updated)
-        return res
-            .status(404)
-            .json({
-                success: false,
-                message: null,
-                error: "Club not found",
-                data: null,
-            });
+        return res.status(404).json({
+            success: false,
+            message: null,
+            error: "Club not found",
+            data: null,
+        });
 
     res.json({
         success: true,
@@ -125,14 +120,12 @@ export const deleteClub = async (req: any, res: any) => {
         .returning();
 
     if (!deleted)
-        return res
-            .status(404)
-            .json({
-                success: false,
-                message: null,
-                error: "Club not found",
-                data: null,
-            });
+        return res.status(404).json({
+            success: false,
+            message: null,
+            error: "Club not found",
+            data: null,
+        });
 
     res.json({
         success: true,
@@ -147,14 +140,12 @@ export const getMyClub = async (req: any, res: any) => {
 
     const [club] = await db.select().from(clubs).where(eq(clubs.id, clubId));
     if (!club)
-        return res
-            .status(404)
-            .json({
-                success: false,
-                message: null,
-                error: "Club not found",
-                data: null,
-            });
+        return res.status(404).json({
+            success: false,
+            message: null,
+            error: "Club not found",
+            data: null,
+        });
 
     const [photoStats] = await db
         .select({ totalSize: sum(photos.sizeInBytes) })
@@ -183,4 +174,4 @@ export const getMyClub = async (req: any, res: any) => {
 export const getAllClubs = async (req: any, res: any) => {
     const all = await db.select().from(clubs);
     res.json({ success: true, message: null, error: null, data: all });
-}
+};

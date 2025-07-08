@@ -13,14 +13,12 @@ export const createUser = async (req: any, res: any) => {
     });
     const parsed = bodySchema.safeParse(req.body);
     if (!parsed.success) {
-        return res
-            .status(400)
-            .json({
-                success: false,
-                message: null,
-                error: parsed.error.format(),
-                data: null,
-            });
+        return res.status(400).json({
+            success: false,
+            message: null,
+            error: parsed.error.format(),
+            data: null,
+        });
     }
 
     const { email, password } = parsed.data;
@@ -29,14 +27,12 @@ export const createUser = async (req: any, res: any) => {
         .from(users)
         .where(eq(users.email, email));
     if (existing)
-        return res
-            .status(409)
-            .json({
-                success: false,
-                message: null,
-                error: "Email already in use",
-                data: null,
-            });
+        return res.status(409).json({
+            success: false,
+            message: null,
+            error: "Email already in use",
+            data: null,
+        });
 
     const hashed = await hashPassword(password);
 
@@ -69,14 +65,12 @@ export const updateUser = async (req: any, res: any) => {
 
     const parsed = bodySchema.safeParse(req.body);
     if (!parsed.success) {
-        return res
-            .status(400)
-            .json({
-                success: false,
-                message: null,
-                error: parsed.error.format(),
-                data: null,
-            });
+        return res.status(400).json({
+            success: false,
+            message: null,
+            error: parsed.error.format(),
+            data: null,
+        });
     }
 
     const updateData: any = { ...parsed.data };
@@ -92,14 +86,12 @@ export const updateUser = async (req: any, res: any) => {
         .returning();
 
     if (!updated)
-        return res
-            .status(404)
-            .json({
-                success: false,
-                message: null,
-                error: "User not found",
-                data: null,
-            });
+        return res.status(404).json({
+            success: false,
+            message: null,
+            error: "User not found",
+            data: null,
+        });
     res.json({
         success: true,
         message: "User updated",
@@ -117,7 +109,7 @@ export const deleteUser = async (req: any, res: any) => {
         .where(eq(users.id, Number(userId)))
         .returning();
 
-    if (!deleted){
+    if (!deleted) {
         return res.status(404).json({
             success: false,
             message: null,

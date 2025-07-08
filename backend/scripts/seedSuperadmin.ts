@@ -13,7 +13,10 @@ async function seedSuperadmin() {
     const passwordHash = await hashPassword(password);
 
     // Check if superadmin already exists
-    const existing = await db.select().from(users).where(eq(users.email, email));
+    const existing = await db
+        .select()
+        .from(users)
+        .where(eq(users.email, email));
     if (existing.length > 0) {
         console.log("Superadmin already exists.");
         process.exit(0);
