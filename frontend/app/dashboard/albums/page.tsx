@@ -246,7 +246,7 @@ export default function AlbumsPage() {
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
                     <span>
-                      {new Date(album.createdAt).toLocaleDateString()}
+                      {new Date(album.createdAt || "").toLocaleDateString()}
                     </span>
                   </div>
                 </div>

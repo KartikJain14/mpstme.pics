@@ -143,3 +143,46 @@ export const servePublicPhoto = async (req: any, res: any) => {
         });
     }
 };
+
+export const proxyClubLogo = async (req: any, res: any) => {
+    const { clubSlug } = req.params;
+    try {
+        // Find the club by slug
+        const club = await db
+            .select()
+            .from(clubs)
+            .where(eq(clubs.slug, clubSlug))
+            .limit(1);
+        if (!club || club.length === 0 || !club[0].logoUrl) {
+            return res.status(404).json({
+                success: false,
+                message: null,
+                error: "Club or logo not found",
+                data: null,
+            });
+        }
+        // logoUrl is expected to be the S3 key (path in bucket)
+        const logoKey = club[0].logoUrl;
+        const command = new GetObjectCommand({
+            Bucket: env.S3_BUCKET_NAME,
+            Key: logoKey,
+        });
+        const data = await s3.send(command);
+        res.setHeader(
+            "Content-Type",
+            data.ContentType || "application/octet-stream",
+        );
+        res.setHeader("Content-Length", data.ContentLength?.toString() || "");
+        res.setHeader("Cache-Control", "public, max-age=3600");
+        // @ts-ignore - Body is a readable stream
+        data.Body.pipe(res);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            success: false,
+            message: null,
+            error: "Failed to fetch club logo from S3",
+            data: null,
+        });
+    }
+};
