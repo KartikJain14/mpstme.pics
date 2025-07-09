@@ -11,7 +11,8 @@ export const listAlbums = async (req: any, res: any) => {
         .select()
         .from(albums)
         .where(and(eq(albums.clubId, clubId), eq(albums.deleted, false)));
-    res.json({ success: true, message: null, error: null, data: all });
+    const clubSlug = req.user.clubSlug;
+    res.json({ success: true, message: null, error: null, data: { albums: all, clubSlug } });
 };
 
 // GET /me/albums/:albumId
