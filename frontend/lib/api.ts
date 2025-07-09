@@ -85,6 +85,10 @@ class ApiClient {
     return `/api/club/${clubSlug}/${albumSlug}/photo/${photoId}`;
   }
 
+  async getPhotoCount() {
+    return this.request<{ count: number }>("/photoCount");
+  }
+
   // Club admin routes
   async getMyClub() {
     return this.request<Club>("/me/club");
@@ -194,7 +198,6 @@ class ApiClient {
       headers: {},
     });
   }
-
 
   async updateClub(clubId: number, data: Partial<Club>) {
     return this.request<Club>(`/admin/clubs/${clubId}`, {

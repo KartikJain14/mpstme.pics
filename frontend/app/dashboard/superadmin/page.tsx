@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from "@/components/ui/dialog";
 import {
   Table,
@@ -49,6 +50,12 @@ export default function SuperAdminDashboard() {
     email: "",
     password: "",
   });
+
+  // Add state for create album dialog in superadmin dashboard
+  const [isCreateAlbumOpen, setIsCreateAlbumOpen] = useState(false);
+  const [albumForm, setAlbumForm] = useState({ name: "", description: "" });
+  const [albumError, setAlbumError] = useState<string | null>(null);
+  const [albumLoading, setAlbumLoading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -113,6 +120,28 @@ export default function SuperAdminDashboard() {
       }
     } catch (error) {
       console.error("Failed to create user:", error);
+    }
+  };
+
+  const handleCreateAlbum = async () => {
+    setAlbumLoading(true);
+    setAlbumError(null);
+    try {
+      const res = await api.createAlbum({
+        name: albumForm.name.trim(),
+        description: albumForm.description.trim() || undefined,
+      });
+      if (res.success && res.data) {
+        setIsCreateAlbumOpen(false);
+        setAlbumForm({ name: "", description: "" });
+        // Optionally, refresh albums list if you show it here
+      } else {
+        setAlbumError(res.error || "Failed to create album");
+      }
+    } catch (err) {
+      setAlbumError("An unexpected error occurred");
+    } finally {
+      setAlbumLoading(false);
     }
   };
 

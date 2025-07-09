@@ -22,6 +22,7 @@ import { Calendar, ImageIcon, Plus, Edit, Eye, Trash2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { api } from "@/lib/api";
 import type { Album } from "@/lib/types";
+import { set } from "react-hook-form";
 
 export default function AlbumsPage() {
   const { user } = useAuth();
@@ -32,13 +33,15 @@ export default function AlbumsPage() {
     name: "",
     description: "",
   });
-
+  const [clubSlug, setClubSlug] = useState<string>("");
   useEffect(() => {
     const fetchAlbums = async () => {
       try {
         const response = await api.getMyAlbums();
         if (response.success && response.data) {
           setAlbums(response.data.albums);
+          console.log("Fetched albums:", response.data);
+          setClubSlug(response.data.clubSlug || "");
         }
       } catch (error) {
         console.error("Failed to fetch albums:", error);
@@ -202,12 +205,11 @@ export default function AlbumsPage() {
             >
               <div className="aspect-video bg-neutral-100 relative overflow-hidden">
                 <img
-                  src={
-                    album.coverImage ||
-                    "/placeholder.svg?height=200&width=300&text=Album"
-                  }
+                  src=
+                  {`${process.env.NEXT_PUBLIC_API_URL}/club/${clubSlug}/${album.slug}/photo/0`}
+
                   alt={album.name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-200" />
               </div>
@@ -269,6 +271,7 @@ export default function AlbumsPage() {
                     href={`/dashboard/albums/${album.id}`}
                     className="flex-1"
                   >
+
                     <Button
                       variant="outline"
                       size="sm"
@@ -279,7 +282,7 @@ export default function AlbumsPage() {
                     </Button>
                   </Link>
                   <Link
-                    href={`/${user?.clubId}/${album.slug}`}
+                    href={`/${clubSlug}/${album.slug}`}
                     className="flex-1"
                   >
                     <Button variant="ghost" size="sm" className="w-full">

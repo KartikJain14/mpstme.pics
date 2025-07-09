@@ -19,7 +19,7 @@ export default function ClubPage({ params }: { params: { club: string } }) {
   const [error, setError] = useState<string | null>(null);
   const { club: clubSlug } = use(params);
   const [coverPhotos, setCoverPhotos] = useState<Record<number, string>>({});
-
+  const [photoCount, setPhotoCount] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchClubData = async () => {
@@ -67,6 +67,14 @@ export default function ClubPage({ params }: { params: { club: string } }) {
 
     fetchClubData();
   }, [clubSlug]);
+
+  useEffect(() => {
+    api.getPhotoCount().then(res => {
+      if (res.success && typeof res.data?.count === "number") {
+        setPhotoCount(res.data.count);
+      }
+    });
+  }, []);
 
   if (loading) {
     return (
@@ -181,8 +189,8 @@ export default function ClubPage({ params }: { params: { club: string } }) {
           {/* Stats Section */}
           <div className="border-t border-border/40 pt-8">
             <div className="grid grid-cols-3 gap-8 font-mono text-sm">
-          
-             
+
+
               <div className="space-y-2">
                 <div className="text-muted-foreground">ALBUMS</div>
                 <div className="text-2xl font-medium text-blue-600">
@@ -192,7 +200,7 @@ export default function ClubPage({ params }: { params: { club: string } }) {
               <div className="space-y-2">
                 <div className="text-muted-foreground">PHOTOS</div>
                 <div className="text-2xl font-medium text-purple-600">
-
+                  {photoCount !== null ? photoCount.toString().padStart(2, "0") : "—"}
                 </div>
               </div>
             </div>
