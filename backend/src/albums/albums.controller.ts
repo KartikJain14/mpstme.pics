@@ -1,5 +1,5 @@
 import { db } from "../config/db";
-import { albums } from "../db/schema";
+import { albums, clubs } from "../db/schema";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import { generateSlug } from "../utils/generateSlug";
@@ -11,8 +11,17 @@ export const listAlbums = async (req: any, res: any) => {
         .select()
         .from(albums)
         .where(and(eq(albums.clubId, clubId), eq(albums.deleted, false)));
-    const clubSlug = req.user.clubSlug;
-    res.json({ success: true, message: null, error: null, data: { albums: all, clubSlug } });
+    const [clubSlug] = await db
+        .select({ slug: clubs.slug })
+        .from(clubs)
+        .where(eq(clubs.id, clubId))
+        .limit(1);
+    res.json({
+        success: true,
+        message: null,
+        error: null,
+        data: { albums: all, clubSlug: clubSlug.slug },
+    });
 };
 
 // GET /me/albums/:albumId

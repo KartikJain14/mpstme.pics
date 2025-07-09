@@ -5,10 +5,12 @@ import {
     servePublicPhoto,
     getAllPublicClubs,
     proxyClubLogo,
+    getPhotoCount,
 } from "./public.controller";
 
 const router = Router();
 
+router.get("/photoCount", getPhotoCount)
 router.get("/clubs", getAllPublicClubs);
 router.get("/club/:clubSlug", getClubPublicPage);
 router.get("/club/:clubSlug/logo", proxyClubLogo);

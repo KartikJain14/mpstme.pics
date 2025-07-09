@@ -2,7 +2,7 @@ import { GetObjectCommand } from "@aws-sdk/client-s3";
 import { s3 } from "../config/s3";
 import { env } from "../config/env";
 import { db } from "../config/db";
-import { albums, clubs } from "../db/schema";
+import { albums, clubs, photos } from "../db/schema";
 import {
     resolvePublicPhotoKey,
     getPublicAlbumsForClub,
@@ -10,6 +10,27 @@ import {
 } from "../utils/fileUtils";
 import { and, count, eq } from "drizzle-orm";
 import { redis } from "../config/redis";
+
+export const getPhotoCount = async (req: any, res: any) => {
+    const [c] = await db
+      .select({ count: count() })
+      .from(photos)
+      .innerJoin(albums, eq(photos.albumId, albums.id))
+      .where(
+        and(
+          eq(photos.isPublic, true),
+          eq(albums.isPublic, true),
+          eq(albums.deleted, false)
+        )
+      )
+      .limit(1);
+    return res.json({
+        success: true,
+        message: null,
+        error: null,
+        data: { count: c.count || 0 },
+    });
+};
 
 export const getAllPublicClubs = async (req: any, res: any) => {
     try {
