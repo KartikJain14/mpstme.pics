@@ -7,6 +7,7 @@ import {
     deleteAlbum,
 } from "./albums.controller";
 import { authenticate, requireRole } from "../auth/auth.middleware";
+import { auditMiddleware } from "../audit/audit.middleware";
 
 const router = Router();
 
@@ -17,7 +18,7 @@ router.get(
     requireRole("clubadmin"),
     getAlbum,
 );
-router.post("/me/albums", authenticate, requireRole("clubadmin"), createAlbum);
+router.post("/me/albums", authenticate, requireRole("clubadmin"), auditMiddleware, createAlbum);
 router.patch(
     "/me/albums/:albumId",
     authenticate,

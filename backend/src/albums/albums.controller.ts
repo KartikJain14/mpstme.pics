@@ -80,6 +80,11 @@ export const createAlbum = async (req: any, res: any) => {
         })
         .returning();
 
+    res.locals.action = {
+        type: "create",
+        resource: "album",
+        id: album.id,
+    };
     res.status(201).json({
         success: true,
         message: "Album created",
