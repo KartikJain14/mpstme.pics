@@ -1,6 +1,6 @@
 import { db } from "../config/db";
 import { albums, clubs, photos } from "../db/schema";
-import { and, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 
 export async function resolvePublicPhotoKey(
     clubSlug: string,
@@ -63,9 +63,23 @@ export async function getPublicAlbumsForClub(clubSlug: string) {
                 )
                 .orderBy(photos.uploadedAt)
                 .limit(1);
+
+            const [photoCountResult] = await db
+                .select({ count: count() }) // Use count() from drizzle-orm
+                .from(photos)
+                .where(
+                    and(
+                        eq(photos.albumId, album.id),
+                        eq(photos.isPublic, true),
+                        eq(photos.deleted, false),
+                    ),
+                )
+                .limit(1);
+
             return {
                 ...album,
                 firstImage: firstImage[0]?.id || null,
+                photoCount: photoCountResult?.count || 0,
             };
         }),
     );
