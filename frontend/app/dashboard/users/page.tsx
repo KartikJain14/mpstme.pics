@@ -38,6 +38,13 @@ export default function UsersPage() {
     password: "",
     clubId: "",
   });
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editUser, setEditUser] = useState<User | null>(null);
+  const [editUserForm, setEditUserForm] = useState({
+    email: "",
+    password: "",
+    clubId: "",
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,8 +54,8 @@ export default function UsersPage() {
           api.getAllClubs(),
         ]);
 
-        if (usersResponse.success && usersResponse.data) {
-          setUsers(usersResponse.data);
+        if (usersResponse.success && Array.isArray(usersResponse.data)) {
+          setUsers(usersResponse.data as User[]);
         }
         if (clubsResponse.success && clubsResponse.data) {
           setClubs(clubsResponse.data);
@@ -75,8 +82,8 @@ export default function UsersPage() {
         password: newUser.password,
       });
 
-      if (response.success && response.data) {
-        setUsers([...users, response.data]);
+      if (response.success && response.data && (response.data as User).id) {
+        setUsers([...users, response.data as User]);
         setIsCreateDialogOpen(false);
         setNewUser({ email: "", password: "", clubId: "" });
       }
@@ -101,6 +108,24 @@ export default function UsersPage() {
       }
     } catch (error) {
       console.error("Failed to delete user:", error);
+    }
+  };
+
+  const handleEditUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editUser) return;
+    const update: any = { email: editUserForm.email };
+    if (editUserForm.password) update.password = editUserForm.password;
+    if (editUserForm.clubId) update.clubId = parseInt(editUserForm.clubId);
+    const res = await api.updateUser(editUser.id, update);
+    if (res.success && res.data) {
+      setUsers(
+        users.map((u) =>
+          editUser && u.id === editUser.id ? (res.data as User) : u
+        )
+      );
+      setIsEditDialogOpen(false);
+      setEditUser(null);
     }
   };
 
@@ -291,6 +316,17 @@ export default function UsersPage() {
                       variant="outline"
                       size="sm"
                       className="flex-1 bg-transparent"
+                      onClick={() => {
+                        setEditUser(userItem);
+                        setEditUserForm({
+                          email: userItem.email,
+                          password: "",
+                          clubId: userItem.clubId
+                            ? userItem.clubId.toString()
+                            : "",
+                        });
+                        setIsEditDialogOpen(true);
+                      }}
                     >
                       <Edit className="w-4 h-4 mr-2" />
                       Edit
@@ -310,6 +346,75 @@ export default function UsersPage() {
           ))}
         </div>
       )}
+
+      {/* Edit User Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>Update user details below.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditUser} className="space-y-4">
+            <div>
+              <Label htmlFor="edit-user-email">Email</Label>
+              <Input
+                id="edit-user-email"
+                value={editUserForm.email}
+                onChange={(e) =>
+                  setEditUserForm({ ...editUserForm, email: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-user-password">Password</Label>
+              <Input
+                id="edit-user-password"
+                type="password"
+                value={editUserForm.password}
+                onChange={(e) =>
+                  setEditUserForm({ ...editUserForm, password: e.target.value })
+                }
+                placeholder="Leave blank to keep unchanged"
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-user-club">Assign to Club</Label>
+              <Select
+                value={editUserForm.clubId}
+                onValueChange={(value) =>
+                  setEditUserForm({ ...editUserForm, clubId: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a club" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clubs.map((club) => (
+                    <SelectItem key={club.id} value={club.id.toString()}>
+                      {club.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => setIsEditDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-neutral-900 text-white hover:bg-neutral-800"
+              >
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

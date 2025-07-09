@@ -32,7 +32,14 @@ export default function ClubsPage() {
     storageQuotaMb: 500,
     logoFile: undefined as File | undefined,
   });
-
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editClub, setEditClub] = useState<Club | null>(null);
+  const [editClubForm, setEditClubForm] = useState({
+    name: "",
+    slug: "",
+    storageQuotaMb: 500,
+    logoFile: undefined as File | undefined,
+  });
 
   useEffect(() => {
     const fetchClubs = async () => {
@@ -65,6 +72,23 @@ export default function ClubsPage() {
       }
     } catch (error) {
       console.error("Failed to create club:", error);
+    }
+  };
+
+  const handleEditClub = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editClub) return;
+    const formData: any = {
+      name: editClubForm.name,
+      slug: editClubForm.slug,
+      storageQuotaMb: editClubForm.storageQuotaMb,
+    };
+    if (editClubForm.logoFile) formData.logoFile = editClubForm.logoFile;
+    const res = await api.updateClub(editClub.id, formData);
+    if (res.success && res.data) {
+      setClubs(clubs.map((c) => (c.id === editClub.id ? res.data : c)));
+      setIsEditDialogOpen(false);
+      setEditClub(null);
     }
   };
 
@@ -282,6 +306,16 @@ export default function ClubsPage() {
                     variant="outline"
                     size="sm"
                     className="flex-1 bg-transparent"
+                    onClick={() => {
+                      setEditClub(club);
+                      setEditClubForm({
+                        name: club.name,
+                        slug: club.slug,
+                        storageQuotaMb: club.storageQuotaMb,
+                        logoFile: undefined,
+                      });
+                      setIsEditDialogOpen(true);
+                    }}
                   >
                     <Edit className="w-4 h-4 mr-2" />
                     Edit
@@ -300,6 +334,47 @@ export default function ClubsPage() {
           ))}
         </div>
       )}
+
+      {/* Edit Club Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Club</DialogTitle>
+            <DialogDescription>Update club details below.</DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleEditClub} className="space-y-4">
+            <div>
+              <Label htmlFor="edit-club-name">Name</Label>
+              <Input id="edit-club-name" value={editClubForm.name} onChange={e => setEditClubForm(f => ({ ...f, name: e.target.value }))} />
+            </div>
+            <div>
+              <Label htmlFor="edit-club-slug">Slug</Label>
+              <Input id="edit-club-slug" value={editClubForm.slug} onChange={e => setEditClubForm(f => ({ ...f, slug: e.target.value }))} />
+            </div>
+            <div>
+              <Label htmlFor="edit-club-quota">Storage Quota (MB)</Label>
+              <Input id="edit-club-quota" type="number" value={editClubForm.storageQuotaMb} onChange={e => setEditClubForm(f => ({ ...f, storageQuotaMb: parseInt(e.target.value) || 500 }))} />
+            </div>
+            <div>
+              <Label htmlFor="edit-club-logo">Logo File</Label>
+              <Input id="edit-club-logo" type="file" accept="image/*" onChange={e => setEditClubForm(f => ({ ...f, logoFile: e.target.files?.[0] }))} />
+              {editClubForm.logoFile && (
+                <img
+                  src={URL.createObjectURL(editClubForm.logoFile)}
+                  alt="Preview"
+                  className="h-16 mt-2 rounded"
+                />
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" type="button" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+              <Button type="submit" className="bg-neutral-900 text-white hover:bg-neutral-800">
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

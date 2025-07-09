@@ -57,6 +57,24 @@ export default function SuperAdminDashboard() {
   const [albumError, setAlbumError] = useState<string | null>(null);
   const [albumLoading, setAlbumLoading] = useState(false);
 
+  // Edit Club State
+  const [editClub, setEditClub] = useState<Club | null>(null);
+  const [editClubForm, setEditClubForm] = useState({
+    name: "",
+    slug: "",
+    storageQuotaMb: 500,
+    logoFile: undefined as File | undefined,
+  });
+  const [isEditClubOpen, setIsEditClubOpen] = useState(false);
+  // Edit User State
+  const [editUser, setEditUser] = useState<User | null>(null);
+  const [editUserForm, setEditUserForm] = useState({
+    email: "",
+    password: "",
+    clubId: "",
+  });
+  const [isEditUserOpen, setIsEditUserOpen] = useState(false);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -372,7 +390,16 @@ export default function SuperAdminDashboard() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => {
+                        setEditClub(club);
+                        setEditClubForm({
+                          name: club.name,
+                          slug: club.slug,
+                          storageQuotaMb: club.storageQuotaMb,
+                          logoFile: undefined,
+                        });
+                        setIsEditClubOpen(true);
+                      }}>
                         <Edit className="w-4 h-4" />
                       </Button>
                       <Button
@@ -508,7 +535,15 @@ export default function SuperAdminDashboard() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => {
+                        setEditUser(user);
+                        setEditUserForm({
+                          email: user.email,
+                          password: "",
+                          clubId: user.clubId ? user.clubId.toString() : "",
+                        });
+                        setIsEditUserOpen(true);
+                      }}>
                         <Edit className="w-4 h-4" />
                       </Button>
                       {user.role !== "superadmin" && (
@@ -529,6 +564,120 @@ export default function SuperAdminDashboard() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Edit Club Dialog */}
+      <Dialog open={isEditClubOpen} onOpenChange={setIsEditClubOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Club</DialogTitle>
+            <DialogDescription>Update club details below.</DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!editClub) return;
+              const formData: any = {
+                name: editClubForm.name,
+                slug: editClubForm.slug,
+                storageQuotaMb: editClubForm.storageQuotaMb,
+              };
+              if (editClubForm.logoFile) formData.logoFile = editClubForm.logoFile;
+              const res = await api.updateClub(editClub.id, formData);
+              if (res.success && res.data) {
+                setClubs(clubs.map(c => (editClub && c.id === editClub.id ? res.data : c)));
+                setIsEditClubOpen(false);
+                setEditClub(null);
+              }
+            }}
+            className="space-y-4"
+          >
+            <div>
+              <Label htmlFor="edit-club-name">Name</Label>
+              <Input id="edit-club-name" value={editClubForm.name} onChange={e => setEditClubForm(f => ({ ...f, name: e.target.value }))} />
+            </div>
+            <div>
+              <Label htmlFor="edit-club-slug">Slug</Label>
+              <Input id="edit-club-slug" value={editClubForm.slug} onChange={e => setEditClubForm(f => ({ ...f, slug: e.target.value }))} />
+            </div>
+            <div>
+              <Label htmlFor="edit-club-quota">Storage Quota (MB)</Label>
+              <Input id="edit-club-quota" type="number" value={editClubForm.storageQuotaMb} onChange={e => setEditClubForm(f => ({ ...f, storageQuotaMb: parseInt(e.target.value) || 500 }))} />
+            </div>
+            <div>
+              <Label htmlFor="edit-club-logo">Logo File</Label>
+              <Input id="edit-club-logo" type="file" accept="image/*" onChange={e => setEditClubForm(f => ({ ...f, logoFile: e.target.files?.[0] }))} />
+              {editClubForm.logoFile && (
+                <img
+                  src={URL.createObjectURL(editClubForm.logoFile)}
+                  alt="Preview"
+                  className="h-16 mt-2 rounded"
+                />
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" type="button" onClick={() => setIsEditClubOpen(false)}>Cancel</Button>
+              <Button type="submit" className="bg-neutral-900 text-white hover:bg-neutral-800">
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit User Dialog */}
+      <Dialog open={isEditUserOpen} onOpenChange={setIsEditUserOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+            <DialogDescription>Update user details below.</DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (!editUser) return;
+              const update: any = { email: editUserForm.email };
+              if (editUserForm.password) update.password = editUserForm.password;
+              if (editUserForm.clubId) update.clubId = parseInt(editUserForm.clubId);
+              const res = await api.updateUser(editUser.id, update);
+              if (res.success && res.data) {
+                setUsers(users.map(u => (editUser && u.id === editUser.id ? res.data : u)));
+                setIsEditUserOpen(false);
+                setEditUser(null);
+              }
+            }}
+            className="space-y-4"
+          >
+            <div>
+              <Label htmlFor="edit-user-email">Email</Label>
+              <Input id="edit-user-email" value={editUserForm.email} onChange={e => setEditUserForm(f => ({ ...f, email: e.target.value }))} />
+            </div>
+            <div>
+              <Label htmlFor="edit-user-password">Password</Label>
+              <Input id="edit-user-password" type="password" value={editUserForm.password} onChange={e => setEditUserForm(f => ({ ...f, password: e.target.value }))} placeholder="Leave blank to keep unchanged" />
+            </div>
+            <div>
+              <Label htmlFor="edit-user-club">Assign to Club</Label>
+              <select
+                id="edit-user-club"
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+                value={editUserForm.clubId}
+                onChange={e => setEditUserForm(f => ({ ...f, clubId: e.target.value }))}
+              >
+                <option value="">Select a club</option>
+                {clubs.map((club) => (
+                  <option key={club.id} value={club.id}>{club.name}</option>
+                ))}
+              </select>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" type="button" onClick={() => setIsEditUserOpen(false)}>Cancel</Button>
+              <Button type="submit" className="bg-neutral-900 text-white hover:bg-neutral-800">
+                Save Changes
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
