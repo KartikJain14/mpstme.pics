@@ -272,7 +272,7 @@ export default function ClubPage({ params }: { params: { club: string } }) {
                             </span>
                           </div>
                           <span className="text-muted-foreground">
-                            {new Date(album.createdAt).getFullYear()}
+                            {new Date(album.createdAt as string).getFullYear()}
                           </span>
                         </div>
 

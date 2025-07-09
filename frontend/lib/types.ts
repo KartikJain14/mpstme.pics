@@ -14,7 +14,7 @@ export interface Club {
   logoUrl?: string;
   bio?: string;
   storageQuotaMb: number;
-  createdAt: string;
+  createdAt?: string;
   // Computed fields that may be added by frontend or backend
   logo?: string;
   quota?: number;
@@ -38,6 +38,7 @@ export interface Album {
   description?: string;
   coverImage?: string;
   photoCount?: number;
+  firstImage?: number; // ID of the first image in the album
 }
 
 export interface Photo {

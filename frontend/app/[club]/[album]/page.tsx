@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { LogoutButton } from "@/components/logout-button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import {
   X,
   ChevronLeft,
@@ -29,8 +29,8 @@ export default function AlbumPage({
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const clubSlug = params.club;
-  const albumSlug = params.album;
+  const { club: clubSlug, album: albumSlug } = use(params);
+
 
   useEffect(() => {
     const fetchAlbumData = async () => {
@@ -248,16 +248,15 @@ export default function AlbumPage({
                   className="aspect-square bg-background hover:bg-blue-50/50 transition-colors duration-200 group relative overflow-hidden"
                 >
                   <Image
-                    src={api.getPhotoUrl(clubSlug, albumSlug, photo.id)}
+                    src={api.getPublicPhoto(clubSlug, albumSlug, photo.id) || "/placeholder.svg?height=400&width=400&text=Loading..."}
                     alt={`Photo ${index + 1}`}
                     width={400}
                     height={400}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     onError={(e) => {
                       // Fallback to placeholder if image fails to load
-                      e.currentTarget.src = `/placeholder.svg?height=400&width=400&text=${
-                        index + 1
-                      }`;
+                      e.currentTarget.src = `/placeholder.svg?height=400&width=400&text=${index + 1
+                        }`;
                     }}
                   />
                   <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -312,7 +311,7 @@ export default function AlbumPage({
             {selectedPhotoData && (
               <div className="max-w-full max-h-full p-16">
                 <Image
-                  src={api.getPhotoUrl(
+                  src={api.getPublicPhoto(
                     clubSlug,
                     albumSlug,
                     selectedPhotoData.id
@@ -323,9 +322,8 @@ export default function AlbumPage({
                   className="max-w-full max-h-full object-contain"
                   onError={(e) => {
                     // Fallback to placeholder if image fails to load
-                    e.currentTarget.src = `/placeholder.svg?height=1200&width=1200&text=${
-                      (selectedPhoto || 0) + 1
-                    }`;
+                    e.currentTarget.src = `/placeholder.svg?height=1200&width=1200&text=${(selectedPhoto || 0) + 1
+                      }`;
                   }}
                 />
               </div>

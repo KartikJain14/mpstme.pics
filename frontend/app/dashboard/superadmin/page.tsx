@@ -41,7 +41,7 @@ export default function SuperAdminDashboard() {
   const [newClub, setNewClub] = useState({
     name: "",
     bio: "",
-    logoUrl: "",
+    logoFile: undefined as File | undefined,
     storageQuotaMb: 500,
   });
 
@@ -83,11 +83,16 @@ export default function SuperAdminDashboard() {
     if (!newClub.name.trim()) return;
 
     try {
-      const response = await api.createClub(newClub);
+      const response = await api.createClub({
+        name: newClub.name,
+        bio: newClub.bio,
+        logoFile: newClub.logoFile,
+        storageQuotaMb: newClub.storageQuotaMb,
+      });
       if (response.success && response.data) {
         setClubs([...clubs, response.data]);
         setIsCreateClubOpen(false);
-        setNewClub({ name: "", bio: "", logoUrl: "", storageQuotaMb: 500 });
+        setNewClub({ name: "", bio: "", logoFile: undefined, storageQuotaMb: 500 });
       }
     } catch (error) {
       console.error("Failed to create club:", error);
@@ -267,14 +272,15 @@ export default function SuperAdminDashboard() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="club-logo">Logo URL</Label>
+                    <Label htmlFor="club-logo">Logo File</Label>
                     <Input
                       id="club-logo"
-                      value={newClub.logoUrl}
-                      onChange={(e) =>
-                        setNewClub({ ...newClub, logoUrl: e.target.value })
-                      }
-                      placeholder="https://example.com/logo.png"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        setNewClub({ ...newClub, logoFile: file });
+                      }}
                     />
                   </div>
                   <div>
@@ -333,7 +339,7 @@ export default function SuperAdminDashboard() {
                   </TableCell>
                   <TableCell>{club.storageQuotaMb} MB</TableCell>
                   <TableCell>
-                    {new Date(club.createdAt).toLocaleDateString()}
+                    {club.createdAt ? new Date(club.createdAt).toLocaleDateString() : "—"}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
@@ -465,7 +471,7 @@ export default function SuperAdminDashboard() {
                   <TableCell>
                     {user.clubId
                       ? clubs.find((c) => c.id === user.clubId)?.name ||
-                        `Club ${user.clubId}`
+                      `Club ${user.clubId}`
                       : "—"}
                   </TableCell>
                   <TableCell>

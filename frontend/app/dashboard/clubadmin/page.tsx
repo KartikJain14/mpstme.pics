@@ -177,13 +177,12 @@ export default function ClubAdminDashboard() {
             </div>
             <Progress
               value={storagePercentage}
-              className={`h-2 ${
-                storagePercentage > 90
+              className={`h-2 ${storagePercentage > 90
                   ? "bg-red-100"
                   : storagePercentage > 80
-                  ? "bg-yellow-100"
-                  : "bg-green-100"
-              }`}
+                    ? "bg-yellow-100"
+                    : "bg-green-100"
+                }`}
             />
             {storagePercentage > 80 && (
               <p className="text-xs text-amber-600">
@@ -212,14 +211,12 @@ export default function ClubAdminDashboard() {
                 {stat.description}
               </p>
               <div
-                className={`text-xs flex items-center ${
-                  stat.trendUp ? "text-green-600" : "text-red-600"
-                }`}
+                className={`text-xs flex items-center ${stat.trendUp ? "text-green-600" : "text-red-600"
+                  }`}
               >
                 <TrendingUp
-                  className={`w-3 h-3 mr-1 ${
-                    !stat.trendUp ? "rotate-180" : ""
-                  }`}
+                  className={`w-3 h-3 mr-1 ${!stat.trendUp ? "rotate-180" : ""
+                    }`}
                 />
                 {stat.trend}
               </div>
@@ -304,7 +301,7 @@ export default function ClubAdminDashboard() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {albums.slice(0, 6).map((album) => (
-                <Link key={album.id} href={`/dashboard/albums/${album.id}`}>
+                <Link key={album.id} href={`/${album.clubId}/albums/${album.id}`}>
                   <Card className="cursor-pointer hover:shadow-sm transition-shadow">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between mb-2">

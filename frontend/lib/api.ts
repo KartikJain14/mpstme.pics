@@ -1,6 +1,6 @@
 import type { User, Club, Album, Photo, ApiResponse } from "./types";
 
-const API_BASE = "/api"; // Use Next.js proxy
+const API_BASE = "/api"; // Use Next.js proxy instead of direct backend URL
 
 class ApiClient {
   private token: string | null = null;
@@ -16,20 +16,21 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<ApiResponse<T>> {
     const url = `${API_BASE}${endpoint}`;
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      ...(options.headers as Record<string, string>),
-    };
-
+    let headers: Record<string, string> = {};
+    // Only set Content-Type if not sending FormData
+    if (!(options.body instanceof FormData)) {
+      headers["Content-Type"] = "application/json";
+    }
+    if (options.headers) {
+      headers = { ...headers, ...(options.headers as Record<string, string>) };
+    }
     if (this.token) {
       headers["Authorization"] = `Bearer ${this.token}`;
     }
-
     const response = await fetch(url, {
       ...options,
       headers,
     });
-
     const data = await response.json();
     return data;
   }
@@ -47,13 +48,7 @@ class ApiClient {
     if (response.success && response.data) {
       this.token = response.data.token;
       localStorage.setItem("auth_token", response.data.token);
-
-      // Ensure user data exists before storing
-      if (response.data.user) {
-        localStorage.setItem("user", JSON.stringify(response.data.user));
-      } else {
-        console.error("Login response missing user data:", response);
-      }
+      localStorage.setItem("user", JSON.stringify(response.data.user));
     }
 
     return response;
@@ -68,19 +63,7 @@ class ApiClient {
   getCurrentUser(): User | null {
     if (typeof window === "undefined") return null;
     const userStr = localStorage.getItem("user");
-
-    if (!userStr || userStr === "undefined" || userStr === "null") {
-      return null;
-    }
-
-    try {
-      return JSON.parse(userStr);
-    } catch (error) {
-      console.error("Failed to parse user from localStorage:", error);
-      // Clear invalid data
-      localStorage.removeItem("user");
-      return null;
-    }
+    return userStr ? JSON.parse(userStr) : null;
   }
 
   // Public routes
@@ -89,33 +72,17 @@ class ApiClient {
   }
 
   async getPublicClub(clubSlug: string) {
-    return this.request<{ club: Club; publicAlbums: Album[] }>(
-      `/club/${clubSlug}`
-    );
+    return this.request<{ club: Club; albums: Album[] }>(`/club/${clubSlug}`);
   }
 
   async getPublicAlbum(clubSlug: string, albumSlug: string) {
-    return this.request<{ album: Album; photos: Photo[] }>(
+    return this.request<{ club: Club; album: Album; photos: Photo[] }>(
       `/club/${clubSlug}/${albumSlug}`
     );
   }
 
-  async getPublicPhoto(clubSlug: string, albumSlug: string, photoId: number) {
-    return this.request<any>(`/club/${clubSlug}/${albumSlug}/photo/${photoId}`);
-  }
-
-  // Helper function to generate photo URL for direct image access
-  getPhotoUrl(clubSlug: string, albumSlug: string, photoId: number): string {
-    return `${API_BASE}/club/${clubSlug}/${albumSlug}/photo/${photoId}`;
-  }
-
-  // Helper function to generate admin photo URL for authenticated access
-  getAdminPhotoUrl(photoId: number): string {
-    const token = this.token || localStorage.getItem("auth_token");
-    if (token) {
-      return `${API_BASE}/photos/${photoId}?token=${encodeURIComponent(token)}`;
-    }
-    return `${API_BASE}/photos/${photoId}`;
+  getPublicPhoto(clubSlug: string, albumSlug: string, photoId: number) {
+    return `/api/club/${clubSlug}/${albumSlug}/photo/${photoId}`;
   }
 
   // Club admin routes
@@ -145,10 +112,6 @@ class ApiClient {
     return this.request(`/me/albums/${albumId}`, {
       method: "DELETE",
     });
-  }
-
-  async getAlbum(albumId: number) {
-    return this.request<Album>(`/me/albums/${albumId}`);
   }
 
   async getAlbumPhotos(albumId: number) {
@@ -184,12 +147,6 @@ class ApiClient {
     });
   }
 
-  async togglePhotoVisibility(photoId: number) {
-    return this.request<Photo>(`/photos/${photoId}`, {
-      method: "PATCH",
-    });
-  }
-
   async deletePhoto(photoId: number) {
     return this.request(`/photos/${photoId}`, {
       method: "DELETE",
@@ -215,15 +172,23 @@ class ApiClient {
 
   async createClub(data: {
     name: string;
-    logoUrl?: string;
+    logoFile?: File;
     bio?: string;
     storageQuotaMb: number;
   }) {
+    const formData = new FormData();
+    formData.append("name", data.name);
+    if (data.bio) formData.append("bio", data.bio);
+    formData.append("storageQuotaMb", data.storageQuotaMb.toString());
+    if (data.logoFile) formData.append("logo", data.logoFile);
+
     return this.request<Club>("/admin/clubs", {
       method: "POST",
-      body: JSON.stringify(data),
+      body: formData,
+      headers: {},
     });
   }
+
 
   async updateClub(clubId: number, data: Partial<Club>) {
     return this.request<Club>(`/admin/clubs/${clubId}`, {

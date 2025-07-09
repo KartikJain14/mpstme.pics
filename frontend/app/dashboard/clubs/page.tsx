@@ -30,7 +30,9 @@ export default function ClubsPage() {
     name: "",
     bio: "",
     storageQuotaMb: 500,
+    logoFile: undefined as File | undefined,
   });
+
 
   useEffect(() => {
     const fetchClubs = async () => {
@@ -59,7 +61,7 @@ export default function ClubsPage() {
       if (response.success && response.data) {
         setClubs([...clubs, response.data]);
         setIsCreateDialogOpen(false);
-        setNewClub({ name: "", bio: "", storageQuotaMb: 500 });
+        setNewClub({ name: "", bio: "", storageQuotaMb: 500, logoFile: undefined });
       }
     } catch (error) {
       console.error("Failed to create club:", error);
@@ -131,6 +133,36 @@ export default function ClubsPage() {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
+              {newClub.logoFile && (
+                <img
+                  src={URL.createObjectURL(newClub.logoFile)}
+                  alt="Preview"
+                  className="h-20 rounded mt-2"
+                />
+              )}
+
+              <div>
+                <Label htmlFor="logo">Club Logo (Max 100 KB)</Label>
+                <Input
+                  id="logo"
+                  type="file"
+                  accept="image/png, image/jpeg, image/webp"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
+                    const maxSize = 100 * 1024; // 100 KB
+                    if (file.size > maxSize) {
+                      alert("File is too large. Maximum size is 100 KB.");
+                      e.target.value = ""; // Reset file input
+                      return;
+                    }
+
+                    setNewClub({ ...newClub, logoFile: file });
+                  }}
+                />
+              </div>
+
               <div>
                 <Label htmlFor="name">Club Name</Label>
                 <Input

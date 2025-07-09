@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Search,
   Filter,
@@ -48,6 +48,8 @@ export default function PhotosPage() {
   const [selectedAlbum, setSelectedAlbum] = useState<string>("all");
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -80,26 +82,20 @@ export default function PhotosPage() {
 
   useEffect(() => {
     let filtered = photos;
-
-    // Filter by search term
     if (searchTerm) {
       filtered = filtered.filter(
         (photo) =>
-          photo.originalName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          photo.caption?.toLowerCase().includes(searchTerm.toLowerCase())
+          photo.fileName?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-
-    // Filter by album
     if (selectedAlbum && selectedAlbum !== "all") {
-      filtered = filtered.filter((photo) => photo.albumId === selectedAlbum);
+      filtered = filtered.filter((photo) => photo.albumId === Number(selectedAlbum));
     }
-
     setFilteredPhotos(filtered);
   }, [photos, searchTerm, selectedAlbum]);
 
   const handleUpdatePhoto = async (
-    photoId: string,
+    photoId: number,
     updates: Partial<Photo>
   ) => {
     try {
@@ -116,7 +112,7 @@ export default function PhotosPage() {
     }
   };
 
-  const handleDeletePhoto = async (photoId: string) => {
+  const handleDeletePhoto = async (photoId: number) => {
     if (!confirm("Are you sure you want to delete this photo?")) return;
 
     try {
@@ -129,17 +125,54 @@ export default function PhotosPage() {
     }
   };
 
-  const getAlbumName = (albumId: string) => {
+  const getAlbumName = (albumId: number | undefined) => {
+    if (albumId === undefined) return "Unknown Album";
     const album = albums.find((a) => a.id === albumId);
     return album?.name || "Unknown Album";
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes";
+  const formatFileSize = (bytes: number | undefined) => {
+    if (!bytes || bytes === 0) return "0 Bytes";
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    if (!albums.length) return;
+    // Ask user to select album if not filtered
+    let albumId = selectedAlbum;
+    if (!albumId || albumId === "all") {
+      albumId = albums[0].id.toString();
+    }
+    setUploading(true);
+    try {
+      const fileArr = Array.from(files);
+      const response = await api.uploadPhotos(Number(albumId), fileArr);
+      if (response.success) {
+        // Refresh photos for the album
+        const photosResponse = await api.getAlbumPhotos(Number(albumId));
+        if (photosResponse.success && photosResponse.data) {
+          setPhotos((prev) => {
+            // Remove old photos from this album, add new
+            const filtered = prev.filter((p) => p.albumId !== Number(albumId));
+            return [...filtered, ...photosResponse.data];
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Failed to upload photos", err);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   if (loading) {
@@ -157,14 +190,23 @@ export default function PhotosPage() {
         <div>
           <h1 className="text-2xl font-semibold text-neutral-900">Photos</h1>
           <p className="text-neutral-600 mt-1">
-            Manage all photos across your albums ({filteredPhotos.length} of{" "}
-            {photos.length} photos)
+            Manage all photos across your albums ({filteredPhotos.length} of {photos.length} photos)
           </p>
         </div>
-        <Button className="bg-neutral-900 text-white hover:bg-neutral-800">
-          <Upload className="w-4 h-4 mr-2" />
-          Upload Photos
-        </Button>
+        <>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <Button className="bg-neutral-900 text-white hover:bg-neutral-800" onClick={handleUploadClick} disabled={uploading || albums.length === 0}>
+            <Upload className="w-4 h-4 mr-2" />
+            {uploading ? "Uploading..." : "Upload Photos"}
+          </Button>
+        </>
       </div>
 
       {/* Filters */}
@@ -175,7 +217,7 @@ export default function PhotosPage() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-neutral-400 w-4 h-4" />
                 <Input
-                  placeholder="Search photos by name or caption..."
+                  placeholder="Search photos by name..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -189,7 +231,7 @@ export default function PhotosPage() {
               <SelectContent>
                 <SelectItem value="all">All Albums</SelectItem>
                 {albums.map((album) => (
-                  <SelectItem key={album.id} value={album.id}> 
+                  <SelectItem key={album.id} value={album.id.toString()}>
                     {album.name}
                   </SelectItem>
                 ))}
@@ -219,8 +261,8 @@ export default function PhotosPage() {
             >
               <div className="aspect-square relative bg-neutral-100">
                 <Image
-                  src="/placeholder.jpg"
-                  alt={photo.originalName}
+                  src={photo.s3Url || "/placeholder.jpg"}
+                  alt={photo.fileName || "Photo"}
                   fill
                   className="object-cover"
                 />
@@ -253,9 +295,9 @@ export default function PhotosPage() {
                   <div className="flex items-center justify-between">
                     <h3
                       className="font-medium text-neutral-900 truncate"
-                      title={photo.originalName}
+                      title={photo.fileName || "Photo"}
                     >
-                      {photo.originalName}
+                      {photo.fileName || "Photo"}
                     </h3>
                     <Badge
                       variant="secondary"
@@ -276,13 +318,8 @@ export default function PhotosPage() {
                     {getAlbumName(photo.albumId)}
                   </p>
                   <p className="text-xs text-neutral-500">
-                    {formatFileSize(photo.size)}
+                    {formatFileSize(photo.sizeInBytes)}
                   </p>
-                  {photo.caption && (
-                    <p className="text-sm text-neutral-600 line-clamp-2">
-                      {photo.caption}
-                    </p>
-                  )}
                 </div>
               </CardContent>
             </Card>
@@ -296,30 +333,16 @@ export default function PhotosPage() {
           <DialogHeader>
             <DialogTitle>Edit Photo</DialogTitle>
             <DialogDescription>
-              Update photo details and visibility settings.
+              Update photo visibility settings.
             </DialogDescription>
           </DialogHeader>
           {selectedPhoto && (
             <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="caption">Caption</Label>
-                <Textarea
-                  id="caption"
-                  placeholder="Add a caption for this photo..."
-                  defaultValue={selectedPhoto.caption || ""}
-                  onChange={(e) =>
-                    setSelectedPhoto({
-                      ...selectedPhoto,
-                      caption: e.target.value,
-                    })
-                  }
-                />
-              </div>
               <div className="flex items-center space-x-2">
                 <input
                   type="checkbox"
                   id="isPublic"
-                  checked={selectedPhoto.isPublic}
+                  checked={!!selectedPhoto.isPublic}
                   onChange={(e) =>
                     setSelectedPhoto({
                       ...selectedPhoto,
@@ -343,7 +366,6 @@ export default function PhotosPage() {
               onClick={() =>
                 selectedPhoto &&
                 handleUpdatePhoto(selectedPhoto.id, {
-                  caption: selectedPhoto.caption,
                   isPublic: selectedPhoto.isPublic,
                 })
               }
