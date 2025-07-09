@@ -87,6 +87,10 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
             name: albumResponse.data.name,
             description: albumResponse.data.description || "",
           });
+          // Set clubSlug from album response
+          if (albumResponse.data.clubSlug) {
+            setClubSlug(albumResponse.data.clubSlug);
+          }
         }
 
         if (photosResponse.success && photosResponse.data) {
@@ -417,77 +421,83 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {photos.map((photo) => (
-                <div
-                  key={photo.id}
-                  className="group relative bg-neutral-100 rounded-lg overflow-hidden aspect-square"
-                >
-                  <AuthenticatedImage
-                    photoId={photo.id}
-                    alt={`Photo ${photo.id}`}
-                    className="w-full h-full object-cover"
-                    onError={(error) => {
-                      console.log("Image load error for photo:", photo, error);
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleTogglePhotoVisibility(photo.id)}
-                        className="text-white hover:bg-white/20"
-                      >
-                        {photo.isPublic ? (
-                          <Eye className="w-4 h-4" />
-                        ) : (
-                          <EyeOff className="w-4 h-4" />
-                        )}
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="text-white hover:bg-white/20"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Photo</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete this photo? This
-                              action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDeletePhoto(photo.id)}
-                              className="bg-red-600 hover:bg-red-700"
+              {photos.map((photo) => {
+                const previewUrl =
+                  clubSlug && album?.slug && photo.id
+                    ? `${process.env.NEXT_PUBLIC_API_URL}/club/${clubSlug}/${album.slug}/photo/${photo.id}`
+                    : "/placeholder.jpg";
+                return (
+                  <div
+                    key={photo.id}
+                    className="group relative bg-neutral-100 rounded-lg overflow-hidden aspect-square"
+                  >
+                    <img
+                      src={previewUrl}
+                      alt={`Photo ${photo.id}`}
+                      className="w-full h-full object-cover"
+                      onError={(error) => {
+                        console.log("Image load error for photo:", photo, error);
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleTogglePhotoVisibility(photo.id)}
+                          className="text-white hover:bg-white/20"
+                        >
+                          {photo.isPublic ? (
+                            <Eye className="w-4 h-4" />
+                          ) : (
+                            <EyeOff className="w-4 h-4" />
+                          )}
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-white hover:bg-white/20"
                             >
-                              Delete Photo
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Photo</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete this photo? This
+                                action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeletePhoto(photo.id)}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Delete Photo
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
+                    <div className="absolute top-2 right-2">
+                      <Badge
+                        variant={photo.isPublic ? "default" : "secondary"}
+                        className={`text-xs ${photo.isPublic
+                          ? "bg-green-100 text-green-800"
+                          : "bg-neutral-100 text-neutral-600"
+                          }`}
+                      >
+                        {photo.isPublic ? "public" : "private"}
+                      </Badge>
                     </div>
                   </div>
-                  <div className="absolute top-2 right-2">
-                    <Badge
-                      variant={photo.isPublic ? "default" : "secondary"}
-                      className={`text-xs ${photo.isPublic
-                        ? "bg-green-100 text-green-800"
-                        : "bg-neutral-100 text-neutral-600"
-                        }`}
-                    >
-                      {photo.isPublic ? "public" : "private"}
-                    </Badge>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>

@@ -20,11 +20,11 @@ export interface Club {
   quota?: number;
   quotaUsed?: number;
   storageUsedMb?: number;
-  memberCount?: number;
   updatedAt?: string;
   albumCount?: number;
 }
 
+// When using albums collections, always use: Album[]
 export interface Album {
   id: number;
   clubId?: number;

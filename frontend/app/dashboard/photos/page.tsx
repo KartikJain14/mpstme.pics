@@ -50,6 +50,7 @@ export default function PhotosPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [clubSlug, setClubSlug] = useState<string>("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,10 +59,11 @@ export default function PhotosPage() {
 
         if (albumsResponse.success && albumsResponse.data) {
           setAlbums(albumsResponse.data.albums);
+          setClubSlug(albumsResponse.data.clubSlug || "");
 
           // Fetch photos from all albums
           const allPhotos: Photo[] = [];
-          for (const album of albumsResponse.data) {
+          for (const album of albumsResponse.data.albums) {
             const photosResponse = await api.getAlbumPhotos(album.id);
             if (photosResponse.success && photosResponse.data) {
               allPhotos.push(...photosResponse.data);
@@ -163,7 +165,7 @@ export default function PhotosPage() {
           setPhotos((prev) => {
             // Remove old photos from this album, add new
             const filtered = prev.filter((p) => p.albumId !== Number(albumId));
-            return [...filtered, ...photosResponse.data];
+            return [...filtered, ...(photosResponse.data || [])];
           });
         }
       }
@@ -254,76 +256,85 @@ export default function PhotosPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredPhotos.map((photo) => (
-            <Card
-              key={photo.id}
-              className="border-neutral-200 bg-white overflow-hidden group"
-            >
-              <div className="aspect-square relative bg-neutral-100">
-                <Image
-                  src={photo.s3Url || "/placeholder.jpg"}
-                  alt={photo.fileName || "Photo"}
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      className="bg-white/90 hover:bg-white"
-                      onClick={() => {
-                        setSelectedPhoto(photo);
-                        setIsEditDialogOpen(true);
-                      }}
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      className="bg-white/90 hover:bg-white"
-                      onClick={() => handleDeletePhoto(photo.id)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+          {filteredPhotos.map((photo) => {
+            const album = albums.find((a) => a.id === photo.albumId);
+            const albumSlug = album?.slug;
+            // Use public photo endpoint for preview
+            const previewUrl =
+              clubSlug && albumSlug && photo.id
+                ? `${process.env.NEXT_PUBLIC_API_URL}/club/${clubSlug}/${albumSlug}/photo/${photo.id}`
+                : "/placeholder.jpg";
+            return (
+              <Card
+                key={photo.id}
+                className="border-neutral-200 bg-white overflow-hidden group"
+              >
+                <div className="aspect-square relative bg-neutral-100">
+                  <Image
+                    src={previewUrl}
+                    alt={photo.fileName || "Photo"}
+                    fill
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="bg-white/90 hover:bg-white"
+                        onClick={() => {
+                          setSelectedPhoto(photo);
+                          setIsEditDialogOpen(true);
+                        }}
+                      >
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        className="bg-white/90 hover:bg-white"
+                        onClick={() => handleDeletePhoto(photo.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <CardContent className="p-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h3
-                      className="font-medium text-neutral-900 truncate"
-                      title={photo.fileName || "Photo"}
-                    >
-                      {photo.fileName || "Photo"}
-                    </h3>
-                    <Badge
-                      variant="secondary"
-                      className={
-                        photo.isPublic
-                          ? "bg-green-50 text-green-700"
-                          : "bg-neutral-100 text-neutral-600"
-                      }
-                    >
-                      {photo.isPublic ? (
-                        <Eye className="w-3 h-3" />
-                      ) : (
-                        <EyeOff className="w-3 h-3" />
-                      )}
-                    </Badge>
+                <CardContent className="p-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h3
+                        className="font-medium text-neutral-900 truncate"
+                        title={photo.fileName || "Photo"}
+                      >
+                        {photo.fileName || "Photo"}
+                      </h3>
+                      <Badge
+                        variant="secondary"
+                        className={
+                          photo.isPublic
+                            ? "bg-green-50 text-green-700"
+                            : "bg-neutral-100 text-neutral-600"
+                        }
+                      >
+                        {photo.isPublic ? (
+                          <Eye className="w-3 h-3" />
+                        ) : (
+                          <EyeOff className="w-3 h-3" />
+                        )}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-neutral-600 truncate">
+                      {getAlbumName(photo.albumId)}
+                    </p>
+                    <p className="text-xs text-neutral-500">
+                      {formatFileSize(photo.sizeInBytes)}
+                    </p>
                   </div>
-                  <p className="text-sm text-neutral-600 truncate">
-                    {getAlbumName(photo.albumId)}
-                  </p>
-                  <p className="text-xs text-neutral-500">
-                    {formatFileSize(photo.sizeInBytes)}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
 

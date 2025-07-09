@@ -199,11 +199,10 @@ export default function SettingsPage() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors ${
-                    activeTab === tab.id
+                  className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors ${activeTab === tab.id
                       ? "bg-neutral-100 text-neutral-900 font-medium"
                       : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50"
-                  }`}
+                    }`}
                 >
                   <tab.icon className="w-4 h-4" />
                   {tab.label}
@@ -308,8 +307,7 @@ export default function SettingsPage() {
                         ...prev,
                         allowMemberUploads: checked,
                       }))
-                    }
-                  />
+                      />
                 </div>
               </CardContent>
             </Card>
@@ -327,27 +325,6 @@ export default function SettingsPage() {
               <CardContent className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Show Member Count</Label>
-                    <p className="text-sm text-neutral-600">
-                      Display the number of club members publicly
-                    </p>
-                  </div>
-                  <Switch
-                    checked={settings.privacySettings.showMemberCount}
-                    onCheckedChange={(checked) =>
-                      setSettings((prev) => ({
-                        ...prev,
-                        privacySettings: {
-                          ...prev.privacySettings,
-                          showMemberCount: checked,
-                        },
-                      }))
-                    }
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
                     <Label>Allow Guest Viewing</Label>
                     <p className="text-sm text-neutral-600">
                       Let non-members view public albums
@@ -363,8 +340,7 @@ export default function SettingsPage() {
                           allowGuestViewing: checked,
                         },
                       }))
-                    }
-                  />
+                      />
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -384,8 +360,7 @@ export default function SettingsPage() {
                           requireLoginForDownload: checked,
                         },
                       }))
-                    }
-                  />
+                      />
                 </div>
               </CardContent>
             </Card>
@@ -418,8 +393,7 @@ export default function SettingsPage() {
                           newPhotoUploads: checked,
                         },
                       }))
-                    }
-                  />
+                      />
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -439,8 +413,7 @@ export default function SettingsPage() {
                           newMembers: checked,
                         },
                       }))
-                    }
-                  />
+                      />
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -460,8 +433,7 @@ export default function SettingsPage() {
                           storageAlerts: checked,
                         },
                       }))
-                    }
-                  />
+                      />
                 </div>
               </CardContent>
             </Card>
@@ -489,130 +461,129 @@ export default function SettingsPage() {
                           ...prev,
                           maxPhotoSize: parseInt(value),
                         }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select maximum file size" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="5">5 MB</SelectItem>
-                        <SelectItem value="10">10 MB</SelectItem>
-                        <SelectItem value="25">25 MB</SelectItem>
-                        <SelectItem value="50">50 MB</SelectItem>
-                        <SelectItem value="100">100 MB</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                        >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select maximum file size" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="5">5 MB</SelectItem>
+                          <SelectItem value="10">10 MB</SelectItem>
+                          <SelectItem value="25">25 MB</SelectItem>
+                          <SelectItem value="50">50 MB</SelectItem>
+                          <SelectItem value="100">100 MB</SelectItem>
+                        </SelectContent>
+                      </Select>
+                </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Auto-approve Photos</Label>
-                      <p className="text-sm text-neutral-600">
-                        Automatically approve member photo uploads
-                      </p>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Auto-approve Photos</Label>
+                    <p className="text-sm text-neutral-600">
+                      Automatically approve member photo uploads
+                    </p>
+                  </div>
+                  <Switch
+                    checked={settings.autoApprovePhotos}
+                    onCheckedChange={(checked) =>
+                      setSettings((prev) => ({
+                        ...prev,
+                        autoApprovePhotos: checked,
+                      }))
+                      />
                     </div>
-                    <Switch
-                      checked={settings.autoApprovePhotos}
-                      onCheckedChange={(checked) =>
-                        setSettings((prev) => ({
-                          ...prev,
-                          autoApprovePhotos: checked,
-                        }))
-                      }
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Storage Overview */}
-              <Card className="border-neutral-200 bg-white">
-                <CardHeader>
-                  <CardTitle>Storage Overview</CardTitle>
-                  <CardDescription>
-                    Monitor your club's storage usage
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {club && (
-                    <>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-neutral-900">
-                          Storage Used
-                        </span>
-                        <span className="text-sm text-neutral-600">
-                          {formatFileSize(club.quotaUsed)} of{" "}
-                          {formatFileSize(club.quota)}
-                        </span>
-                      </div>
-                      <div className="bg-neutral-200 rounded-full h-3">
-                        <div
-                          className={`h-3 rounded-full transition-all duration-300 ${
-                            getStorageUsagePercentage() > 80
-                              ? "bg-red-500"
-                              : "bg-neutral-900"
-                          }`}
-                          style={{
-                            width: `${Math.min(
-                              getStorageUsagePercentage(),
-                              100
-                            )}%`,
-                          }}
-                        />
-                      </div>
-                      {getStorageUsagePercentage() > 80 && (
-                        <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                          <AlertTriangle className="w-4 h-4 text-amber-600" />
-                          <p className="text-sm text-amber-800">
-                            You're running low on storage space. Consider
-                            upgrading your plan or cleaning up old files.
-                          </p>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Danger Zone */}
-              <Card className="border-red-200 bg-white">
-                <CardHeader>
-                  <CardTitle className="text-red-600">Danger Zone</CardTitle>
-                  <CardDescription>
-                    Irreversible and destructive actions
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive">
-                        <AlertTriangle className="w-4 h-4 mr-2" />
-                        Delete Club
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Are you absolutely sure?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will permanently
-                          delete your club, all albums, photos, and member data.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction className="bg-red-600 hover:bg-red-700">
-                          Yes, delete club
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </CardContent>
-              </Card>
             </div>
+                </CardContent>
+      </Card>
+
+      {/* Storage Overview */}
+      <Card className="border-neutral-200 bg-white">
+        <CardHeader>
+          <CardTitle>Storage Overview</CardTitle>
+          <CardDescription>
+            Monitor your club's storage usage
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {club && (
+            <>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-neutral-900">
+                  Storage Used
+                </span>
+                <span className="text-sm text-neutral-600">
+                  {formatFileSize(club.quotaUsed)} of{" "}
+                  {formatFileSize(club.quota)}
+                </span>
+              </div>
+              <div className="bg-neutral-200 rounded-full h-3">
+                <div
+                  className={`h-3 rounded-full transition-all duration-300 ${getStorageUsagePercentage() > 80
+                      ? "bg-red-500"
+                      : "bg-neutral-900"
+                    }`}
+                  style={{
+                    width: `${Math.min(
+                      getStorageUsagePercentage(),
+                      100
+                    )}%`,
+                  }}
+                />
+              </div>
+              {getStorageUsagePercentage() > 80 && (
+                <div className="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <AlertTriangle className="w-4 h-4 text-amber-600" />
+                  <p className="text-sm text-amber-800">
+                    You're running low on storage space. Consider
+                    upgrading your plan or cleaning up old files.
+                  </p>
+                </div>
+              )}
+            </>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
+
+      {/* Danger Zone */}
+      <Card className="border-red-200 bg-white">
+        <CardHeader>
+          <CardTitle className="text-red-600">Danger Zone</CardTitle>
+          <CardDescription>
+            Irreversible and destructive actions
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive">
+                <AlertTriangle className="w-4 h-4 mr-2" />
+                Delete Club
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Are you absolutely sure?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently
+                  delete your club, all albums, photos, and member data.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction className="bg-red-600 hover:bg-red-700">
+                  Yes, delete club
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </CardContent>
+      </Card>
     </div>
+  )
+}
+        </div >
+      </div >
+    </div >
   );
 }

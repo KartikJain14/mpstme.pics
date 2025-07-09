@@ -67,7 +67,6 @@ export const dummyClubs: Club[] = [
     bio: "The Computer Society of India (CSI) student chapter focuses on advancing computer science education and fostering innovation in technology. We organize workshops, hackathons, and technical seminars to bridge the gap between academic learning and industry requirements.",
     quota: 5000, // 5GB
     quotaUsed: 1247, // ~1.2GB used
-    memberCount: 120,
     createdAt: "2024-01-01T00:00:00Z",
     updatedAt: "2024-03-15T00:00:00Z",
   },
@@ -79,7 +78,6 @@ export const dummyClubs: Club[] = [
     bio: "IEEE Student Branch promoting electrical and electronics engineering excellence through workshops, technical events, and industry collaborations. We aim to advance technology for humanity.",
     quota: 3000, // 3GB
     quotaUsed: 892,
-    memberCount: 95,
     createdAt: "2024-01-02T00:00:00Z",
     updatedAt: "2024-02-20T00:00:00Z",
   },
@@ -91,7 +89,6 @@ export const dummyClubs: Club[] = [
     bio: "ACM Student Chapter dedicated to advancing computing as a science and profession. We host programming competitions, research seminars, and career development workshops.",
     quota: 2000, // 2GB
     quotaUsed: 456,
-    memberCount: 85,
     createdAt: "2024-01-03T00:00:00Z",
     updatedAt: "2024-01-10T00:00:00Z",
   },
@@ -103,7 +100,6 @@ export const dummyClubs: Club[] = [
     bio: "Robotics Club focused on automation, artificial intelligence, and mechatronics. We build robots, participate in competitions, and explore the future of autonomous systems.",
     quota: 4000, // 4GB
     quotaUsed: 1876,
-    memberCount: 67,
     createdAt: "2024-01-04T00:00:00Z",
     updatedAt: "2024-03-10T00:00:00Z",
   },
@@ -115,7 +111,6 @@ export const dummyClubs: Club[] = [
     bio: "Photography Club dedicated to visual arts and storytelling through images. We organize photo walks, exhibitions, and workshops on various photography techniques and post-processing.",
     quota: 8000, // 8GB
     quotaUsed: 3456,
-    memberCount: 143,
     createdAt: "2024-01-05T00:00:00Z",
     updatedAt: "2024-03-20T00:00:00Z",
   },
@@ -127,7 +122,6 @@ export const dummyClubs: Club[] = [
     bio: "Drama Society bringing stories to life through theatre and performing arts. We produce plays, organize acting workshops, and celebrate the rich tradition of dramatic arts.",
     quota: 2500, // 2.5GB
     quotaUsed: 789,
-    memberCount: 78,
     createdAt: "2024-01-06T00:00:00Z",
     updatedAt: "2024-02-15T00:00:00Z",
   },
@@ -139,7 +133,6 @@ export const dummyClubs: Club[] = [
     bio: "Music Society harmonizing talents and celebrating musical diversity. We organize concerts, music competitions, and provide a platform for budding musicians to showcase their skills.",
     quota: 3500, // 3.5GB
     quotaUsed: 1234,
-    memberCount: 92,
     createdAt: "2024-01-07T00:00:00Z",
     updatedAt: "2024-03-05T00:00:00Z",
   },
@@ -151,7 +144,6 @@ export const dummyClubs: Club[] = [
     bio: "Literary Society fostering love for literature, creative writing, and public speaking. We host poetry sessions, book discussions, and writing workshops.",
     quota: 1500, // 1.5GB
     quotaUsed: 234,
-    memberCount: 56,
     createdAt: "2024-01-08T00:00:00Z",
     updatedAt: "2024-02-28T00:00:00Z",
   },

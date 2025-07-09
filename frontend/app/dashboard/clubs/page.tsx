@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect } from "react";
-import { Plus, Edit, Trash2, Building2, Users } from "lucide-react";
+import { Plus, Edit, Trash2, Building2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { api } from "@/lib/api";
 import type { Club } from "@/lib/types";
@@ -295,10 +295,7 @@ export default function ClubsPage() {
                 )}
 
                 <div className="flex items-center gap-4 text-sm text-neutral-500">
-                  <div className="flex items-center gap-1">
-                    <Users className="w-4 h-4" />
-                    <span>{club.memberCount || 0} members</span>
-                  </div>
+                  {/* Removed member count display */}
                 </div>
 
                 <div className="flex gap-2 pt-2">

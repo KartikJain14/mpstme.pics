@@ -95,7 +95,7 @@ class ApiClient {
   }
 
   async getMyAlbums() {
-    return this.request<Album[]>("/me/albums");
+    return this.request<{ albums: Album[]; clubSlug: string }>("/me/albums");
   }
 
   async createAlbum(data: { name: string; description?: string }) {

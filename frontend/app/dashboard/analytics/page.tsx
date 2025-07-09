@@ -212,12 +212,6 @@ export default function AnalyticsPage() {
       icon: HardDrive,
       description: club ? `of ${formatFileSize(club.quota)} quota` : "No quota",
     },
-    {
-      title: "Club Members",
-      value: club?.memberCount.toString() || "0",
-      icon: Users,
-      description: "Active members",
-    },
   ];
 
   return (
@@ -258,9 +252,8 @@ export default function AnalyticsPage() {
                     <TrendingDown className="h-3 w-3 text-red-600" />
                   )}
                   <span
-                    className={`text-xs font-medium ${
-                      stat.trend ? "text-green-600" : "text-red-600"
-                    }`}
+                    className={`text-xs font-medium ${stat.trend ? "text-green-600" : "text-red-600"
+                      }`}
                   >
                     {stat.change > 0 ? "+" : ""}
                     {stat.change.toFixed(1)}% from last month
