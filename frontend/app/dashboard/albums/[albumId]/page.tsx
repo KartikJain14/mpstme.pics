@@ -84,7 +84,7 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
         ]);
 
         if (albumResponse.success && albumResponse.data) {
-          setAlbum(albumResponse.data);
+          setAlbum(albumResponse.data.albums);
           setEditForm({
             name: albumResponse.data.name,
             description: albumResponse.data.description || "",

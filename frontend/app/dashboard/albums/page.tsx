@@ -38,7 +38,7 @@ export default function AlbumsPage() {
       try {
         const response = await api.getMyAlbums();
         if (response.success && response.data) {
-          setAlbums(response.data);
+          setAlbums(response.data.albums);
         }
       } catch (error) {
         console.error("Failed to fetch albums:", error);

@@ -37,7 +37,8 @@ export default function ClubAdminDashboard() {
         }
 
         if (albumsResponse.success && albumsResponse.data) {
-          setAlbums(albumsResponse.data);
+          setAlbums(albumsResponse.data.albums);
+          console.log("Fetched albums:", albumsResponse.data);
         }
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
@@ -178,10 +179,10 @@ export default function ClubAdminDashboard() {
             <Progress
               value={storagePercentage}
               className={`h-2 ${storagePercentage > 90
-                  ? "bg-red-100"
-                  : storagePercentage > 80
-                    ? "bg-yellow-100"
-                    : "bg-green-100"
+                ? "bg-red-100"
+                : storagePercentage > 80
+                  ? "bg-yellow-100"
+                  : "bg-green-100"
                 }`}
             />
             {storagePercentage > 80 && (

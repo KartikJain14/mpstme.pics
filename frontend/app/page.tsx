@@ -175,7 +175,15 @@ export default function HomePage() {
                       {(index + 1).toString().padStart(2, "0")}
                     </div>
                     <div className="w-12 h-12 bg-foreground text-background flex items-center justify-center font-mono text-lg font-medium group-hover:bg-blue-300 group-hover:text-blue-900 transition-colors">
-                      {club.logo || club.name.substring(0, 3).toUpperCase()}
+                      {club.logoUrl ? (
+                        <img
+                          src={`http://localhost:3001/api/public/club/${club.slug}/logo`}
+                          alt="Club Icon"
+                          className="w-10 h-10 object-cover rounded"
+                        />
+                      ) : (
+                        club.name.substring(0, 3).toUpperCase()
+                      )}
                     </div>
                   </div>
                   <div className="text-right space-y-1">
