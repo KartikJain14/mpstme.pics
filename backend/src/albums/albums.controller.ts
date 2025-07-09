@@ -7,15 +7,17 @@ import { generateSlug } from "../utils/generateSlug";
 // GET /me/albums
 export const listAlbums = async (req: any, res: any) => {
     const clubId = req.user.clubId;
-    const all = await db
-        .select()
-        .from(albums)
-        .where(and(eq(albums.clubId, clubId), eq(albums.deleted, false)));
-    const [clubSlug] = await db
-        .select({ slug: clubs.slug })
-        .from(clubs)
-        .where(eq(clubs.id, clubId))
-        .limit(1);
+    const [all, [clubSlug]] = await Promise.all([
+        db
+            .select()
+            .from(albums)
+            .where(and(eq(albums.clubId, clubId), eq(albums.deleted, false))),
+        db
+            .select({ slug: clubs.slug })
+            .from(clubs)
+            .where(eq(clubs.id, clubId))
+            .limit(1),
+    ]);
     res.json({
         success: true,
         message: null,
