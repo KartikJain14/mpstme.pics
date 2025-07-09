@@ -156,6 +156,7 @@ export const proxyClubLogo = async (req: any, res: any) => {
                 data: null,
             });
         }
+        console.log("Club logo URL:", club[0].logoUrl);
         const logoKey = club[0].logoUrl;
         const cacheKey = `club-logo:${logoKey}`;
         // Try Redis cache first

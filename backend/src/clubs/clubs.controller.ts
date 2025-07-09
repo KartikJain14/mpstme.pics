@@ -37,21 +37,21 @@ export const createClub = async (req: any, res: any) => {
             error: `Slug ${slug} already exists`,
             data: null,
         });
-    let logoUrl: string | undefined = undefined;
-    if (hasLogoFile && req.file?.location) {
-        logoUrl = req.file.location;
+    let logoKey: string | undefined = undefined;
+    if (hasLogoFile && req.file?.key) {
+        logoKey = req.file.key;
     } else if (
-        req.body.logoUrl &&
-        z.string().url().safeParse(req.body.logoUrl).success
+        req.body.logoKey &&
+        typeof req.body.logoKey === "string"
     ) {
-        logoUrl = req.body.logoUrl;
+        logoKey = req.body.logoKey;
     }
     const [created] = await db
         .insert(clubs)
         .values({
             name,
             slug,
-            logoUrl,
+            logoUrl: logoKey, // store only the key
             bio,
             storageQuotaMb,
         })
