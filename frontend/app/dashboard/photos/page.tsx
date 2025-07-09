@@ -57,7 +57,7 @@ export default function PhotosPage() {
         const [albumsResponse] = await Promise.all([api.getMyAlbums()]);
 
         if (albumsResponse.success && albumsResponse.data) {
-          setAlbums(albumsResponse.data);
+          setAlbums(albumsResponse.data.albums);
 
           // Fetch photos from all albums
           const allPhotos: Photo[] = [];

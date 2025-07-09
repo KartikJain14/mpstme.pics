@@ -153,6 +153,12 @@ class ApiClient {
     });
   }
 
+  async getAlbum(albumId: number) {
+    return this.request<Album>(`/me/albums/${albumId}`);
+  }
+  getLogo(clubSlug: string) {
+    return `/api/club/${clubSlug}/logo`;
+  }
   // Admin routes
   async getAdminStats() {
     return this.request("/admin/stats");
