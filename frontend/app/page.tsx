@@ -177,7 +177,7 @@ export default function HomePage() {
                     <div className="w-12 h-12 bg-foreground text-background flex items-center justify-center font-mono text-lg font-medium group-hover:bg-blue-300 group-hover:text-blue-900 transition-colors">
                       {club.logoUrl ? (
                         <img
-                          src={`http://localhost:3001/api/public/club/${club.slug}/logo`}
+                          src={api.getLogo(club.slug)}
                           alt="Club Icon"
                           className="w-10 h-10 object-cover rounded"
                         />

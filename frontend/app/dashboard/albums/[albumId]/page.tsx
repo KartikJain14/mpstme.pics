@@ -66,13 +66,11 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [isEditingAlbum, setIsEditingAlbum] = useState(false);
+  const [clubSlug, setClubSlug] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({
     name: "",
     description: "",
   });
-  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
-  const [pendingTitles, setPendingTitles] = useState<string[]>([]);
-  const [showTitleDialog, setShowTitleDialog] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,7 +82,7 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
         ]);
 
         if (albumResponse.success && albumResponse.data) {
-          setAlbum(albumResponse.data.albums);
+          setAlbum(albumResponse.data);
           setEditForm({
             name: albumResponse.data.name,
             description: albumResponse.data.description || "",
@@ -136,31 +134,25 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
     }
   };
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const files = event.target.files;
     if (!files || files.length === 0) return;
-    setPendingFiles(Array.from(files));
-    setPendingTitles(Array.from(files).map((file) => file.name.replace(/\.[^/.]+$/, "")));
-    setShowTitleDialog(true);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
 
-  const handleConfirmUpload = async () => {
     setUploading(true);
     try {
-      // Attach titles as metadata if backend supports, else just upload files
-      // For now, just upload files
-      const response = await api.uploadPhotos(albumId, pendingFiles);
+      const response = await api.uploadPhotos(albumId, Array.from(files));
       if (response.success && response.data) {
         setPhotos([...photos, ...response.data]);
       }
-      setShowTitleDialog(false);
-      setPendingFiles([]);
-      setPendingTitles([]);
     } catch (error) {
       console.error("Failed to upload photos:", error);
     } finally {
       setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -260,7 +252,7 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
         </div>
         <div className="flex items-center gap-2">
           <Link
-            href={`/${user?.clubId}/${album.slug}`}
+            href={`/${clubSlug}/${album.slug}`}
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -486,11 +478,10 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                   <div className="absolute top-2 right-2">
                     <Badge
                       variant={photo.isPublic ? "default" : "secondary"}
-                      className={`text-xs ${
-                        photo.isPublic
-                          ? "bg-green-100 text-green-800"
-                          : "bg-neutral-100 text-neutral-600"
-                      }`}
+                      className={`text-xs ${photo.isPublic
+                        ? "bg-green-100 text-green-800"
+                        : "bg-neutral-100 text-neutral-600"
+                        }`}
                     >
                       {photo.isPublic ? "public" : "private"}
                     </Badge>
@@ -546,47 +537,6 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
             >
               <Save className="w-4 h-4 mr-2" />
               Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Titles Dialog */}
-      <Dialog open={showTitleDialog} onOpenChange={setShowTitleDialog}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Review & Edit Photo Titles</DialogTitle>
-            <DialogDescription>
-              You can edit the title for each photo before uploading. By default, the file name is used.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 max-h-80 overflow-y-auto">
-            {pendingFiles.map((file, idx) => (
-              <div key={file.name} className="flex items-center gap-2">
-                <ImageIcon className="w-5 h-5 text-neutral-400" />
-                <Input
-                  value={pendingTitles[idx]}
-                  onChange={e => {
-                    const newTitles = [...pendingTitles];
-                    newTitles[idx] = e.target.value;
-                    setPendingTitles(newTitles);
-                  }}
-                  className="flex-1"
-                />
-                <span className="text-xs text-neutral-500">.{file.name.split('.').pop()}</span>
-              </div>
-            ))}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowTitleDialog(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleConfirmUpload}
-              className="bg-neutral-900 text-white hover:bg-neutral-800"
-              disabled={uploading}
-            >
-              {uploading ? "Uploading..." : "Upload"}
             </Button>
           </DialogFooter>
         </DialogContent>

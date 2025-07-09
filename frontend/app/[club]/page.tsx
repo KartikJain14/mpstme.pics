@@ -162,7 +162,7 @@ export default function ClubPage({ params }: { params: { club: string } }) {
             <div className="flex items-start gap-8">
               <div className="w-20 h-20 bg-foreground text-background flex items-center justify-center text-2xl font-mono font-medium rounded-none flex-shrink-0">
                 {club.logoUrl ? (
-                  <img className="w-full h-full object-cover rounded-none" src={club.logoUrl} alt={`${club.name} logo`} />) : <></>}
+                  <img className="w-full h-full object-cover rounded-none" src={api.getLogo(clubSlug)} alt={`${club.name} logo`} />) : <></>}
               </div>
               <div className="space-y-6 flex-1">
                 <div className="space-y-4">
@@ -181,14 +181,12 @@ export default function ClubPage({ params }: { params: { club: string } }) {
           {/* Stats Section */}
           <div className="border-t border-border/40 pt-8">
             <div className="grid grid-cols-3 gap-8 font-mono text-sm">
-              <div className="space-y-2">
-                <div className="text-muted-foreground">MEMBERS</div>
-                <div className="text-2xl font-medium text-emerald-600">
-                </div>
-              </div>
+          
+             
               <div className="space-y-2">
                 <div className="text-muted-foreground">ALBUMS</div>
                 <div className="text-2xl font-medium text-blue-600">
+                  {albums.length.toString().padStart(2, "0")}
                 </div>
               </div>
               <div className="space-y-2">
@@ -241,10 +239,10 @@ export default function ClubPage({ params }: { params: { club: string } }) {
                       <div className="aspect-[4/3] bg-muted/20 relative overflow-hidden">
                         <img
                           src=
-                            {`${process.env.NEXT_PUBLIC_API_URL}/club/${clubSlug}/${album.slug}/photo/${album.firstImage}`}
-                          
-                        alt={album.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          {`${process.env.NEXT_PUBLIC_API_URL}/club/${clubSlug}/${album.slug}/photo/${album.firstImage}`}
+
+                          alt={album.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                         <div className="absolute top-4 left-4">
                           <div className="text-xs font-mono text-white bg-black/40 px-2 py-1 backdrop-blur-sm">
