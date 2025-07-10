@@ -431,8 +431,8 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                     key={photo.id}
                     className="group relative bg-neutral-100 rounded-lg overflow-hidden aspect-square"
                   >
-                    <img
-                      src={previewUrl}
+                    <AuthenticatedImage
+                      photoId={photo.id}
                       alt={`Photo ${photo.id}`}
                       className="w-full h-full object-cover"
                       onError={(error) => {
