@@ -1,27 +1,24 @@
 "use client";
-
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect } from "react";
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
-  const router = useRouter();
+
+  // Redirect based on user role using window.location.href
 
   useEffect(() => {
     if (!loading && user) {
-      // Redirect based on user role
       if (user.role === "superadmin") {
-        router.replace("/dashboard/superadmin");
+        window.location.href = "/dashboard/superadmin";
       } else if (user.role === "clubadmin") {
-        router.replace("/dashboard/clubadmin");
+        window.location.href = "/dashboard/clubadmin";
       }
     } else if (!loading && !user) {
-      // Redirect to login if not authenticated
-      router.replace("/login");
+      window.location.href = "/login";
     }
-  }, [user, loading, router]);
+  }, [user, loading]);
 
   // Show loading while determining user role and redirecting
   if (loading || user) {
@@ -33,7 +30,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-zinc-900"></div>
             </div>
           </CardContent>
         </Card>

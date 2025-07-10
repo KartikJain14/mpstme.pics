@@ -117,7 +117,12 @@ export default function SuperAdminDashboard() {
       if (response.success && response.data) {
         setClubs([...clubs, response.data]);
         setIsCreateClubOpen(false);
-        setNewClub({ name: "", bio: "", logoFile: undefined, storageQuotaMb: 500 });
+        setNewClub({
+          name: "",
+          bio: "",
+          logoFile: undefined,
+          storageQuotaMb: 500,
+        });
       }
     } catch (error) {
       console.error("Failed to create club:", error);
@@ -386,20 +391,26 @@ export default function SuperAdminDashboard() {
                   </TableCell>
                   <TableCell>{club.storageQuotaMb} MB</TableCell>
                   <TableCell>
-                    {club.createdAt ? new Date(club.createdAt).toLocaleDateString() : "—"}
+                    {club.createdAt
+                      ? new Date(club.createdAt).toLocaleDateString()
+                      : "—"}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => {
-                        setEditClub(club);
-                        setEditClubForm({
-                          name: club.name,
-                          slug: club.slug,
-                          storageQuotaMb: club.storageQuotaMb,
-                          logoFile: undefined,
-                        });
-                        setIsEditClubOpen(true);
-                      }}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setEditClub(club);
+                          setEditClubForm({
+                            name: club.name,
+                            slug: club.slug,
+                            storageQuotaMb: club.storageQuotaMb,
+                            logoFile: undefined,
+                          });
+                          setIsEditClubOpen(true);
+                        }}
+                      >
                         <Edit className="w-4 h-4" />
                       </Button>
                       <Button
@@ -527,7 +538,7 @@ export default function SuperAdminDashboard() {
                   <TableCell>
                     {user.clubId
                       ? clubs.find((c) => c.id === user.clubId)?.name ||
-                      `Club ${user.clubId}`
+                        `Club ${user.clubId}`
                       : "—"}
                   </TableCell>
                   <TableCell>
@@ -535,15 +546,19 @@ export default function SuperAdminDashboard() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="sm" onClick={() => {
-                        setEditUser(user);
-                        setEditUserForm({
-                          email: user.email,
-                          password: "",
-                          clubId: user.clubId ? user.clubId.toString() : "",
-                        });
-                        setIsEditUserOpen(true);
-                      }}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setEditUser(user);
+                          setEditUserForm({
+                            email: user.email,
+                            password: "",
+                            clubId: user.clubId ? user.clubId.toString() : "",
+                          });
+                          setIsEditUserOpen(true);
+                        }}
+                      >
                         <Edit className="w-4 h-4" />
                       </Button>
                       {user.role !== "superadmin" && (
@@ -581,10 +596,17 @@ export default function SuperAdminDashboard() {
                 slug: editClubForm.slug,
                 storageQuotaMb: editClubForm.storageQuotaMb,
               };
-              if (editClubForm.logoFile) formData.logoFile = editClubForm.logoFile;
+              if (editClubForm.logoFile)
+                formData.logoFile = editClubForm.logoFile;
               const res = await api.updateClub(editClub.id, formData);
               if (res.success && res.data) {
-                setClubs(clubs.map(c => (editClub && c.id === editClub.id ? res.data : c)));
+                setClubs(
+                  clubs
+                    .map((c) =>
+                      c && editClub && c.id === editClub.id ? res.data : c
+                    )
+                    .filter(Boolean) as Club[]
+                );
                 setIsEditClubOpen(false);
                 setEditClub(null);
               }
@@ -593,19 +615,51 @@ export default function SuperAdminDashboard() {
           >
             <div>
               <Label htmlFor="edit-club-name">Name</Label>
-              <Input id="edit-club-name" value={editClubForm.name} onChange={e => setEditClubForm(f => ({ ...f, name: e.target.value }))} />
+              <Input
+                id="edit-club-name"
+                value={editClubForm.name}
+                onChange={(e) =>
+                  setEditClubForm((f) => ({ ...f, name: e.target.value }))
+                }
+              />
             </div>
             <div>
               <Label htmlFor="edit-club-slug">Slug</Label>
-              <Input id="edit-club-slug" value={editClubForm.slug} onChange={e => setEditClubForm(f => ({ ...f, slug: e.target.value }))} />
+              <Input
+                id="edit-club-slug"
+                value={editClubForm.slug}
+                onChange={(e) =>
+                  setEditClubForm((f) => ({ ...f, slug: e.target.value }))
+                }
+              />
             </div>
             <div>
               <Label htmlFor="edit-club-quota">Storage Quota (MB)</Label>
-              <Input id="edit-club-quota" type="number" value={editClubForm.storageQuotaMb} onChange={e => setEditClubForm(f => ({ ...f, storageQuotaMb: parseInt(e.target.value) || 500 }))} />
+              <Input
+                id="edit-club-quota"
+                type="number"
+                value={editClubForm.storageQuotaMb}
+                onChange={(e) =>
+                  setEditClubForm((f) => ({
+                    ...f,
+                    storageQuotaMb: parseInt(e.target.value) || 500,
+                  }))
+                }
+              />
             </div>
             <div>
               <Label htmlFor="edit-club-logo">Logo File</Label>
-              <Input id="edit-club-logo" type="file" accept="image/*" onChange={e => setEditClubForm(f => ({ ...f, logoFile: e.target.files?.[0] }))} />
+              <Input
+                id="edit-club-logo"
+                type="file"
+                accept="image/*"
+                onChange={(e) =>
+                  setEditClubForm((f) => ({
+                    ...f,
+                    logoFile: e.target.files?.[0],
+                  }))
+                }
+              />
               {editClubForm.logoFile && (
                 <img
                   src={URL.createObjectURL(editClubForm.logoFile)}
@@ -615,8 +669,17 @@ export default function SuperAdminDashboard() {
               )}
             </div>
             <DialogFooter>
-              <Button variant="outline" type="button" onClick={() => setIsEditClubOpen(false)}>Cancel</Button>
-              <Button type="submit" className="bg-neutral-900 text-white hover:bg-neutral-800">
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => setIsEditClubOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-neutral-900 text-white hover:bg-neutral-800"
+              >
                 Save Changes
               </Button>
             </DialogFooter>
@@ -636,11 +699,17 @@ export default function SuperAdminDashboard() {
               e.preventDefault();
               if (!editUser) return;
               const update: any = { email: editUserForm.email };
-              if (editUserForm.password) update.password = editUserForm.password;
-              if (editUserForm.clubId) update.clubId = parseInt(editUserForm.clubId);
+              if (editUserForm.password)
+                update.password = editUserForm.password;
+              if (editUserForm.clubId)
+                update.clubId = parseInt(editUserForm.clubId);
               const res = await api.updateUser(editUser.id, update);
               if (res.success && res.data) {
-                setUsers(users.map(u => (editUser && u.id === editUser.id ? res.data : u)));
+                setUsers(
+                  users.map((u) =>
+                    editUser && u.id === editUser.id ? res.data : u
+                  )
+                );
                 setIsEditUserOpen(false);
                 setEditUser(null);
               }
@@ -649,11 +718,25 @@ export default function SuperAdminDashboard() {
           >
             <div>
               <Label htmlFor="edit-user-email">Email</Label>
-              <Input id="edit-user-email" value={editUserForm.email} onChange={e => setEditUserForm(f => ({ ...f, email: e.target.value }))} />
+              <Input
+                id="edit-user-email"
+                value={editUserForm.email}
+                onChange={(e) =>
+                  setEditUserForm((f) => ({ ...f, email: e.target.value }))
+                }
+              />
             </div>
             <div>
               <Label htmlFor="edit-user-password">Password</Label>
-              <Input id="edit-user-password" type="password" value={editUserForm.password} onChange={e => setEditUserForm(f => ({ ...f, password: e.target.value }))} placeholder="Leave blank to keep unchanged" />
+              <Input
+                id="edit-user-password"
+                type="password"
+                value={editUserForm.password}
+                onChange={(e) =>
+                  setEditUserForm((f) => ({ ...f, password: e.target.value }))
+                }
+                placeholder="Leave blank to keep unchanged"
+              />
             </div>
             <div>
               <Label htmlFor="edit-user-club">Assign to Club</Label>
@@ -661,17 +744,30 @@ export default function SuperAdminDashboard() {
                 id="edit-user-club"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                 value={editUserForm.clubId}
-                onChange={e => setEditUserForm(f => ({ ...f, clubId: e.target.value }))}
+                onChange={(e) =>
+                  setEditUserForm((f) => ({ ...f, clubId: e.target.value }))
+                }
               >
                 <option value="">Select a club</option>
                 {clubs.map((club) => (
-                  <option key={club.id} value={club.id}>{club.name}</option>
+                  <option key={club.id} value={club.id}>
+                    {club.name}
+                  </option>
                 ))}
               </select>
             </div>
             <DialogFooter>
-              <Button variant="outline" type="button" onClick={() => setIsEditUserOpen(false)}>Cancel</Button>
-              <Button type="submit" className="bg-neutral-900 text-white hover:bg-neutral-800">
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => setIsEditUserOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-neutral-900 text-white hover:bg-neutral-800"
+              >
                 Save Changes
               </Button>
             </DialogFooter>

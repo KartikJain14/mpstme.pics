@@ -29,7 +29,7 @@ export default function AlbumPage({
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { club: clubSlug, album: albumSlug } = use(params);
+  const { club: clubSlug, album: albumSlug } = params;
 
 
   useEffect(() => {

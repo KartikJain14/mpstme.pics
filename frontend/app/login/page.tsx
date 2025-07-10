@@ -1,42 +1,73 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useState } from "react"
-import { useAuth } from "@/hooks/use-auth"
-import { useRouter } from "next/navigation"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-  const { login } = useAuth()
-  const router = useRouter()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const { login, user } = useAuth();
+
+  // Handle redirection when user changes (login or on page load)
+  useEffect(() => {
+    if (user) {
+      // Get redirect URL if it exists
+      const searchParams = new URLSearchParams(window.location.search);
+      const redirectPath = searchParams.get("redirect");
+
+      // Redirect based on user role with hard navigation
+      let targetPath;
+      if (user.role === "superadmin") {
+        targetPath = redirectPath
+          ? decodeURIComponent(redirectPath)
+          : "/dashboard/superadmin";
+      } else if (user.role === "clubadmin") {
+        targetPath = redirectPath
+          ? decodeURIComponent(redirectPath)
+          : "/dashboard/clubadmin";
+      } else {
+        targetPath = redirectPath
+          ? decodeURIComponent(redirectPath)
+          : "/dashboard";
+      }
+
+      // Use window.location for hard navigation
+      window.location.href = targetPath;
+    }
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
     try {
-      const success = await login(email, password)
-      if (success) {
-        router.push("/dashboard")
-      } else {
-        setError("Invalid email or password")
+      const success = await login(email, password);
+      if (!success) {
+        setError("Invalid email or password");
       }
+      // The redirect will happen automatically via the useEffect
     } catch (err) {
-      setError("Login failed. Please try again.")
+      setError("Login failed. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-neutral-50 flex items-center justify-center px-4">
@@ -51,17 +82,26 @@ export default function LoginPage() {
         {/* Login Card */}
         <Card className="border-neutral-200 shadow-sm">
           <CardHeader className="text-center space-y-2">
-            <CardTitle className="text-xl font-semibold text-neutral-900">Welcome back</CardTitle>
-            <CardDescription className="text-neutral-600">Sign in to manage your club's photo gallery</CardDescription>
+            <CardTitle className="text-xl font-semibold text-neutral-900">
+              Welcome back
+            </CardTitle>
+            <CardDescription className="text-neutral-600">
+              Sign in to manage your club's photo gallery
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                  {error}
+                </div>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-neutral-900">
+                <Label
+                  htmlFor="email"
+                  className="text-sm font-medium text-neutral-900"
+                >
                   Email address
                 </Label>
                 <Input
@@ -77,7 +117,10 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium text-neutral-900">
+                <Label
+                  htmlFor="password"
+                  className="text-sm font-medium text-neutral-900"
+                >
                   Password
                 </Label>
                 <Input
@@ -114,11 +157,14 @@ export default function LoginPage() {
 
         {/* Back to Home */}
         <div className="text-center mt-8">
-          <Link href="/" className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors">
+          <Link
+            href="/"
+            className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
+          >
             ← Back to gallery
           </Link>
         </div>
       </div>
     </div>
-  )
+  );
 }

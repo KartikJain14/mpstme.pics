@@ -7,11 +7,26 @@ import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import type { Club } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
   const { user } = useAuth();
   const [clubs, setClubs] = useState<Club[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  // Only redirect authenticated users to their appropriate dashboard
+  // useEffect(() => {
+  //   if (user) {
+  //     if (user.role === "superadmin") {
+  //       router.push("/dashboard/superadmin");
+  //     } else if (user.role === "clubadmin") {
+  //       router.push("/dashboard/clubadmin");
+  //     }
+  //     // If user has no recognized role, don't redirect
+  //   }
+  //   // Don't redirect if user is not authenticated
+  // }, [user, router]);
 
   useEffect(() => {
     const fetchClubs = async () => {
@@ -143,11 +158,7 @@ export default function HomePage() {
                 <span className="text-muted-foreground">TOTAL ALBUMS</span>
                 <span className="font-medium text-blue-700">
                   {clubs
-                    .reduce(
-                      (acc, club) =>
-                        acc + (club.albumCount || 0),
-                      0
-                    )
+                    .reduce((acc, club) => acc + (club.albumCount || 0), 0)
                     .toString()
                     .padStart(3, "0")}
                 </span>
@@ -182,7 +193,11 @@ export default function HomePage() {
                           className="w-10 h-10 object-cover rounded"
                         />
                       ) : (
-                        club.name.substring(0, 3).toUpperCase()
+                        <img
+                          src="/placeholder-logo.png"
+                          alt="Placeholder Logo"
+                          className="w-10 h-10 object-cover rounded"
+                        />
                       )}
                     </div>
                   </div>

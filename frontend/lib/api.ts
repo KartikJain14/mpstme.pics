@@ -7,7 +7,23 @@ class ApiClient {
 
   constructor() {
     if (typeof window !== "undefined") {
-      this.token = localStorage.getItem("auth_token");
+      const token = localStorage.getItem("auth_token");
+      const getCookie = (name: string) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(";").shift();
+        return null;
+      };
+      const cookieToken = getCookie("auth_token");
+
+      // Use token from either source
+      this.token = token || cookieToken || null;
+
+      // Ensure both storage methods have the token
+      if (this.token) {
+        localStorage.setItem("auth_token", this.token);
+        document.cookie = `auth_token=${this.token}; path=/; max-age=86400; SameSite=Strict`;
+      }
     }
   }
 
@@ -24,8 +40,14 @@ class ApiClient {
     if (options.headers) {
       headers = { ...headers, ...(options.headers as Record<string, string>) };
     }
-    if (this.token) {
-      headers["Authorization"] = `Bearer ${this.token}`;
+
+    // Always get the freshest token from both localStorage and cookies
+    const token = localStorage.getItem("auth_token");
+    if (token) {
+      this.token = token;
+      headers["Authorization"] = `Bearer ${token}`;
+      // Ensure cookie is set
+      document.cookie = `auth_token=${token}; path=/; max-age=86400; SameSite=Strict`;
     }
     const response = await fetch(url, {
       ...options,
@@ -35,7 +57,7 @@ class ApiClient {
     return data;
   }
 
-  // Auth
+  // Auth methods
   async login(email: string, password: string) {
     const response = await this.request<{ user: User; token: string }>(
       "/auth/login",
@@ -46,9 +68,18 @@ class ApiClient {
     );
 
     if (response.success && response.data) {
+      // Store token in memory
       this.token = response.data.token;
+
+      // Store in localStorage
       localStorage.setItem("auth_token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
+
+      // Store in cookie for server-side auth
+      document.cookie = `auth_token=${response.data.token}; path=/; max-age=86400; SameSite=Strict`;
+
+      // Force reload the page to ensure everything is in sync
+      window.location.reload();
     }
 
     return response;
@@ -56,14 +87,67 @@ class ApiClient {
 
   logout() {
     this.token = null;
+
+    // Clear localStorage
     localStorage.removeItem("auth_token");
     localStorage.removeItem("user");
+
+    // Clear cookie
+    document.cookie =
+      "auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict";
+
+    // Force reload to clear any cached state
+    window.location.href = "/";
   }
 
   getCurrentUser(): User | null {
     if (typeof window === "undefined") return null;
+
+    const token = localStorage.getItem("auth_token");
     const userStr = localStorage.getItem("user");
-    return userStr ? JSON.parse(userStr) : null;
+
+    // If we have both token and user data, great!
+    if (token && userStr) {
+      // Ensure cookie is set
+      const cookieExists = document.cookie.includes("auth_token=");
+      if (!cookieExists) {
+        document.cookie = `auth_token=${token}; path=/; max-age=86400; SameSite=Strict`;
+      }
+      return JSON.parse(userStr);
+    }
+
+    // If we have a token but no user data, try to decode the token
+    if (token) {
+      try {
+        const decoded = JSON.parse(Buffer.from(token, "base64").toString());
+        localStorage.setItem("user", JSON.stringify(decoded));
+        return decoded;
+      } catch (err) {
+        console.error("Failed to decode token:", err);
+        // Clear invalid token
+        this.logout();
+      }
+    }
+
+    return null;
+  }
+
+  private getToken(): string | null {
+    if (typeof window === "undefined") return null;
+
+    // Try to get token from localStorage
+    const tokenFromStorage = localStorage.getItem("auth_token");
+    if (tokenFromStorage) return tokenFromStorage;
+
+    // If not in localStorage, try to get from cookie
+    const getCookieValue = (name: string) => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+      return null;
+    };
+
+    return getCookieValue("auth_token");
   }
 
   // Public routes

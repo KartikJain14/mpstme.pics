@@ -9,7 +9,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import type { Club, Album } from "@/lib/types";
-import { use } from "react";
 
 export default function ClubPage({ params }: { params: { club: string } }) {
   const { user } = useAuth();
@@ -17,7 +16,7 @@ export default function ClubPage({ params }: { params: { club: string } }) {
   const [albums, setAlbums] = useState<Album[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { club: clubSlug } = use(params);
+  const clubSlug = params.club;
   const [coverPhotos, setCoverPhotos] = useState<Record<number, string>>({});
   const [photoCount, setPhotoCount] = useState<number | null>(null);
 
@@ -27,34 +26,29 @@ export default function ClubPage({ params }: { params: { club: string } }) {
         const response = await api.getPublicClub(clubSlug);
         if (response.success && response.data) {
           setClub(response.data.club);
-          console.log("Club data:", response.data.club);
-          setAlbums(response.data.publicAlbums || []);
-          console.log("Albums data:", response.data);
-          if (response.data.publicAlbums?.length) {
+          setAlbums(response.data.albums || []);
+          if (response.data.albums?.length) {
             const photoMap: Record<number, string> = {};
-
             await Promise.all(
-              response.data.publicAlbums.map(async (album: Album) => {
+              response.data.albums.map(async (album: Album) => {
                 if (album.firstImage != null) {
                   try {
-                    console.log("Fetching photo for album:", album.slug);
-                    // Fetch the first image for the album
-                    console.log("Album firstImage ID:", album.firstImage);
-                    const photo = await api.getPublicPhoto(clubSlug, album.slug, album.firstImage);
-                    console.log("Fetched photo for album:", album.slug, photo);
-                    if (photo?.success && photo?.data?.url) {
-                      photoMap[album.id] = photo.data.url;
+                    const photoUrl = await api.getPublicPhoto(
+                      clubSlug,
+                      album.slug,
+                      album.firstImage
+                    );
+                    if (photoUrl) {
+                      photoMap[album.id] = photoUrl;
                     }
                   } catch (err) {
-                    console.error("Error fetching photo for album:", album.slug, err);
+                    // Error fetching photo, skip
                   }
                 }
               })
             );
-
             setCoverPhotos(photoMap);
           }
-
         } else {
           setError("Club not found");
         }
@@ -64,12 +58,11 @@ export default function ClubPage({ params }: { params: { club: string } }) {
         setLoading(false);
       }
     };
-
     fetchClubData();
   }, [clubSlug]);
 
   useEffect(() => {
-    api.getPhotoCount().then(res => {
+    api.getPhotoCount().then((res) => {
       if (res.success && typeof res.data?.count === "number") {
         setPhotoCount(res.data.count);
       }
@@ -170,7 +163,14 @@ export default function ClubPage({ params }: { params: { club: string } }) {
             <div className="flex items-start gap-8">
               <div className="w-20 h-20 bg-foreground text-background flex items-center justify-center text-2xl font-mono font-medium rounded-none flex-shrink-0">
                 {club.logoUrl ? (
-                  <img className="w-full h-full object-cover rounded-none" src={api.getLogo(clubSlug)} alt={`${club.name} logo`} />) : <></>}
+                  <img
+                    className="w-full h-full object-cover rounded-none"
+                    src={api.getLogo(clubSlug)}
+                    alt={`${club.name} logo`}
+                  />
+                ) : (
+                  <></>
+                )}
               </div>
               <div className="space-y-6 flex-1">
                 <div className="space-y-4">
@@ -189,8 +189,6 @@ export default function ClubPage({ params }: { params: { club: string } }) {
           {/* Stats Section */}
           <div className="border-t border-border/40 pt-8">
             <div className="grid grid-cols-3 gap-8 font-mono text-sm">
-
-
               <div className="space-y-2">
                 <div className="text-muted-foreground">ALBUMS</div>
                 <div className="text-2xl font-medium text-blue-600">
@@ -200,7 +198,9 @@ export default function ClubPage({ params }: { params: { club: string } }) {
               <div className="space-y-2">
                 <div className="text-muted-foreground">PHOTOS</div>
                 <div className="text-2xl font-medium text-purple-600">
-                  {photoCount !== null ? photoCount.toString().padStart(2, "0") : "—"}
+                  {photoCount !== null
+                    ? photoCount.toString().padStart(2, "0")
+                    : "—"}
                 </div>
               </div>
             </div>
@@ -235,25 +235,31 @@ export default function ClubPage({ params }: { params: { club: string } }) {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-border">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {albums.map((album, index) => (
                   <Link
                     key={album.id}
                     href={`/${clubSlug}/${album.slug}`}
-                    className="group bg-background hover:bg-blue-50/30 transition-colors duration-200"
+                    className="group bg-zinc-50 hover:bg-zinc-100 transition-colors duration-200 rounded-lg shadow-sm border border-zinc-200"
                   >
-                    <div className="p-8 space-y-6">
+                    <div className="p-6 space-y-6">
                       {/* Image */}
-                      <div className="aspect-[4/3] bg-muted/20 relative overflow-hidden">
-                        <img
-                          src=
-                          {`${process.env.NEXT_PUBLIC_API_URL}/club/${clubSlug}/${album.slug}/photo/${album.firstImage}`}
-
-                          alt={album.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
+                      <div className="aspect-[4/3] bg-zinc-200 relative overflow-hidden rounded-md">
+                        {album.firstImage ? (
+                          <img
+                            src={`${process.env.NEXT_PUBLIC_API_URL}/club/${clubSlug}/${album.slug}/photo/${album.firstImage}`}
+                            alt={album.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-md"
+                          />
+                        ) : (
+                          <img
+                            src="/placeholder.jpg"
+                            alt="Placeholder Cover"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-md"
+                          />
+                        )}
                         <div className="absolute top-4 left-4">
-                          <div className="text-xs font-mono text-white bg-black/40 px-2 py-1 backdrop-blur-sm">
+                          <div className="text-xs font-mono text-white bg-blue-600/80 px-2 py-1 rounded font-medium">
                             {(index + 1).toString().padStart(2, "0")}
                           </div>
                         </div>
@@ -265,7 +271,7 @@ export default function ClubPage({ params }: { params: { club: string } }) {
                           <h3 className="text-lg font-medium leading-tight group-hover:text-blue-700 transition-colors">
                             {album.name}
                           </h3>
-                          <p className="text-sm text-muted-foreground leading-relaxed font-light">
+                          <p className="text-sm text-zinc-500 leading-relaxed font-light">
                             {album.description}
                           </p>
                         </div>
@@ -273,20 +279,18 @@ export default function ClubPage({ params }: { params: { club: string } }) {
                         {/* Stats */}
                         <div className="flex items-center justify-between font-mono text-xs">
                           <div className="flex items-center gap-4">
-                            <span className="text-blue-600">
-                              PHOTOS
-                            </span>
+                            <span className="text-blue-600">PHOTOS</span>
                           </div>
-                          <span className="text-muted-foreground">
+                          <span className="text-zinc-400">
                             {new Date(album.createdAt as string).getFullYear()}
                           </span>
                         </div>
 
                         {/* Footer indicator */}
-                        <div className="pt-4 border-t border-border/20">
+                        <div className="pt-4 border-t border-zinc-200">
                           <div className="flex items-center justify-between">
-                            <div className="w-4 h-px bg-muted-foreground/20 group-hover:bg-blue-300 transition-colors"></div>
-                            <div className="text-xs font-mono text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity group-hover:text-blue-600">
+                            <div className="w-4 h-px bg-zinc-200 group-hover:bg-blue-300 transition-colors"></div>
+                            <div className="text-xs font-mono text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity group-hover:text-blue-600">
                               VIEW →
                             </div>
                           </div>

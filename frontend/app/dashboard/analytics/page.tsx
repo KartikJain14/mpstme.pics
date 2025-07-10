@@ -62,14 +62,22 @@ export default function AnalyticsPage() {
           setClub(clubResponse.data);
         }
 
-        if (albumsResponse.success && albumsResponse.data) {
+        if (
+          albumsResponse.success &&
+          albumsResponse.data &&
+          Array.isArray(albumsResponse.data)
+        ) {
           setAlbums(albumsResponse.data);
 
           // Fetch photos from all albums
           const allPhotos: Photo[] = [];
           for (const album of albumsResponse.data) {
             const photosResponse = await api.getAlbumPhotos(album.id);
-            if (photosResponse.success && photosResponse.data) {
+            if (
+              photosResponse &&
+              photosResponse.success &&
+              Array.isArray(photosResponse.data)
+            ) {
               allPhotos.push(...photosResponse.data);
             }
           }
@@ -83,18 +91,25 @@ export default function AnalyticsPage() {
             viewsThisMonth: Math.floor(Math.random() * 2000) + 800,
             downloadsThisMonth: Math.floor(Math.random() * 200) + 100,
             sharesThisMonth: Math.floor(Math.random() * 100) + 50,
-            topAlbums: albumsResponse.data
+            topAlbums: (albumsResponse.data as Album[])
               .slice(0, 5)
-              .map((album) => ({
-                album,
+              .map((album: Album) => ({
+                album: {
+                  ...album,
+                  isPublic: album.isPublic ?? true,
+                  photoCount: album.photoCount ?? 0,
+                },
                 views: Math.floor(Math.random() * 1000) + 100,
                 downloads: Math.floor(Math.random() * 100) + 20,
               }))
               .sort((a, b) => b.views - a.views),
             topPhotos: allPhotos
               .slice(0, 5)
-              .map((photo) => ({
-                photo,
+              .map((photo: Photo) => ({
+                photo: {
+                  ...photo,
+                  isPublic: photo.isPublic ?? true,
+                },
                 views: Math.floor(Math.random() * 500) + 50,
                 downloads: Math.floor(Math.random() * 50) + 10,
               }))
@@ -112,11 +127,13 @@ export default function AnalyticsPage() {
                 uploads: Math.floor(Math.random() * 50) + 5,
               };
             }).reverse(),
-            storageBreakdown: albumsResponse.data.map((album) => ({
-              albumName: album.name,
-              size: Math.floor(Math.random() * 500) + 50, // MB
-              photoCount: album.photoCount,
-            })),
+            storageBreakdown: (albumsResponse.data as Album[]).map(
+              (album: Album) => ({
+                albumName: album.name,
+                size: Math.floor(Math.random() * 500) + 50, // MB
+                photoCount: album.photoCount ?? 0,
+              })
+            ),
           };
 
           setAnalytics(mockAnalytics);
@@ -208,9 +225,11 @@ export default function AnalyticsPage() {
     },
     {
       title: "Storage Used",
-      value: club ? formatFileSize(club.quotaUsed) : "0 MB",
+      value: club ? formatFileSize(club.quotaUsed ?? 0) : "0 MB",
       icon: HardDrive,
-      description: club ? `of ${formatFileSize(club.quota)} quota` : "No quota",
+      description: club
+        ? `of ${formatFileSize(club.quota ?? 0)} quota`
+        : "No quota",
     },
   ];
 
@@ -252,8 +271,9 @@ export default function AnalyticsPage() {
                     <TrendingDown className="h-3 w-3 text-red-600" />
                   )}
                   <span
-                    className={`text-xs font-medium ${stat.trend ? "text-green-600" : "text-red-600"
-                      }`}
+                    className={`text-xs font-medium ${
+                      stat.trend ? "text-green-600" : "text-red-600"
+                    }`}
                   >
                     {stat.change > 0 ? "+" : ""}
                     {stat.change.toFixed(1)}% from last month
