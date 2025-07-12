@@ -156,7 +156,9 @@ class ApiClient {
   }
 
   async getPublicClub(clubSlug: string) {
-    return this.request<{ club: Club; albums: Album[] }>(`/club/${clubSlug}`);
+    return this.request<{ club: Club; publicAlbums: Album[] }>(
+      `/club/${clubSlug}`
+    );
   }
 
   async getPublicAlbum(clubSlug: string, albumSlug: string) {
@@ -314,6 +316,20 @@ class ApiClient {
     return this.request(`/admin/users/${userId}`, {
       method: "DELETE",
     });
+  }
+
+  // Health check (patched to handle /health response directly)
+  async getHealth() {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || ""}/health`
+      );
+      if (!res.ok) return { success: false };
+      const data = await res.json();
+      return { success: data.status === "ok", data };
+    } catch {
+      return { success: false };
+    }
   }
 }
 

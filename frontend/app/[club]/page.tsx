@@ -6,17 +6,21 @@ import { Badge } from "@/components/ui/badge";
 import { LogoutButton } from "@/components/logout-button";
 import { Folder, Calendar, ImageIcon, Users } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { api } from "@/lib/api";
 import type { Club, Album } from "@/lib/types";
 
-export default function ClubPage({ params }: { params: { club: string } }) {
+export default function ClubPage({
+  params,
+}: {
+  params: Promise<{ club: string }>;
+}) {
   const { user } = useAuth();
   const [club, setClub] = useState<Club | null>(null);
   const [albums, setAlbums] = useState<Album[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const clubSlug = params.club;
+  const { club: clubSlug } = use(params);
   const [coverPhotos, setCoverPhotos] = useState<Record<number, string>>({});
   const [photoCount, setPhotoCount] = useState<number | null>(null);
 
@@ -26,11 +30,18 @@ export default function ClubPage({ params }: { params: { club: string } }) {
         const response = await api.getPublicClub(clubSlug);
         if (response.success && response.data) {
           setClub(response.data.club);
-          setAlbums(response.data.albums || []);
-          if (response.data.albums?.length) {
+          setAlbums(response.data.publicAlbums || []);
+          
+          // Calculate total photo count for this club
+          const totalPhotos = response.data.publicAlbums?.reduce((total, album) => {
+            return total + (album.photoCount || 0);
+          }, 0) || 0;
+          setPhotoCount(totalPhotos);
+          
+          if (response.data.publicAlbums?.length) {
             const photoMap: Record<number, string> = {};
             await Promise.all(
-              response.data.albums.map(async (album: Album) => {
+              response.data.publicAlbums.map(async (album: Album) => {
                 if (album.firstImage != null) {
                   try {
                     const photoUrl = await api.getPublicPhoto(
@@ -61,13 +72,14 @@ export default function ClubPage({ params }: { params: { club: string } }) {
     fetchClubData();
   }, [clubSlug]);
 
-  useEffect(() => {
-    api.getPhotoCount().then((res) => {
-      if (res.success && typeof res.data?.count === "number") {
-        setPhotoCount(res.data.count);
-      }
-    });
-  }, []);
+  // Remove the separate photo count effect since we calculate it from album data
+  // useEffect(() => {
+  //   api.getPhotoCount().then((res) => {
+  //     if (res.success && typeof res.data?.count === "number") {
+  //       setPhotoCount(res.data.count);
+  //     }
+  //   });
+  // }, []);
 
   if (loading) {
     return (
@@ -305,18 +317,7 @@ export default function ClubPage({ params }: { params: { club: string } }) {
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="border-t bg-secondary/10">
-        <div className="max-w-6xl mx-auto px-8 py-12">
-          <div className="flex items-center justify-between text-xs font-mono text-muted-foreground">
-            <div>© 2025 MPSTME.PICS</div>
-            <div className="flex items-center gap-4">
-              <span>SYSTEM STATUS: OPERATIONAL</span>
-              <div className="w-2 h-2 bg-emerald-300 rounded-full"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+
     </div>
   );
 }

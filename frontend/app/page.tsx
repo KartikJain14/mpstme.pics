@@ -13,6 +13,10 @@ export default function HomePage() {
   const { user } = useAuth();
   const [clubs, setClubs] = useState<Club[]>([]);
   const [loading, setLoading] = useState(true);
+  const [systemStatus, setSystemStatus] = useState<
+    "CHECKING" | "OPERATIONAL" | "ERROR"
+  >("CHECKING");
+  const [lastHealthCheck, setLastHealthCheck] = useState<string | null>(null);
   const router = useRouter();
 
   // Only redirect authenticated users to their appropriate dashboard
@@ -59,6 +63,30 @@ export default function HomePage() {
     };
 
     fetchClubs();
+  }, []);
+
+  // Health check effect
+  useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        const response = await api.getHealth();
+        if (response.success && response.data?.status === "ok") {
+          setSystemStatus("OPERATIONAL");
+          setLastHealthCheck(response.data.time);
+        } else {
+          setSystemStatus("ERROR");
+        }
+      } catch (error) {
+        console.error("Health check failed:", error);
+        setSystemStatus("ERROR");
+      }
+    };
+
+    checkHealth();
+
+    // Check health every 30 seconds
+    const interval = setInterval(checkHealth, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
@@ -164,7 +192,6 @@ export default function HomePage() {
                 </span>
               </div>
             </div>
-            <div className="text-muted-foreground">UPDATED TODAY</div>
           </div>
         </div>
       </div>
@@ -242,8 +269,21 @@ export default function HomePage() {
           <div className="flex items-center justify-between text-xs font-mono text-muted-foreground">
             <div>© 2025 MPSTME.PICS</div>
             <div className="flex items-center gap-4">
-              <span>SYSTEM STATUS: OPERATIONAL</span>
-              <div className="w-2 h-2 bg-emerald-300 rounded-full"></div>
+              <span>SYSTEM STATUS: {systemStatus}</span>
+              <div
+                className={`w-2 h-2 rounded-full ${
+                  systemStatus === "OPERATIONAL"
+                    ? "bg-emerald-300"
+                    : systemStatus === "ERROR"
+                    ? "bg-red-400"
+                    : "bg-yellow-400 animate-pulse"
+                }`}
+              ></div>
+              {lastHealthCheck && systemStatus === "OPERATIONAL" && (
+                <span className="text-[10px] opacity-60">
+                  Last check: {new Date(lastHealthCheck).toLocaleTimeString()}
+                </span>
+              )}
             </div>
           </div>
         </div>

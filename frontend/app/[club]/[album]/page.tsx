@@ -20,7 +20,7 @@ import type { Club, Album, Photo } from "@/lib/types";
 export default function AlbumPage({
   params,
 }: {
-  params: { club: string; album: string };
+  params: Promise<{ club: string; album: string }>;
 }) {
   const { user } = useAuth();
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
@@ -29,8 +29,7 @@ export default function AlbumPage({
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { club: clubSlug, album: albumSlug } = params;
-
+  const { club: clubSlug, album: albumSlug } = use(params);
 
   useEffect(() => {
     const fetchAlbumData = async () => {
@@ -60,6 +59,33 @@ export default function AlbumPage({
 
     fetchAlbumData();
   }, [clubSlug, albumSlug]);
+
+  // Keyboard navigation for lightbox
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (selectedPhoto === null) return;
+
+      switch (e.key) {
+        case "ArrowLeft":
+          e.preventDefault();
+          navigatePhoto("prev");
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          navigatePhoto("next");
+          break;
+        case "Escape":
+          e.preventDefault();
+          closeLightbox();
+          break;
+      }
+    };
+
+    if (selectedPhoto !== null) {
+      document.addEventListener("keydown", handleKeyPress);
+      return () => document.removeEventListener("keydown", handleKeyPress);
+    }
+  }, [selectedPhoto, photos.length]);
 
   const openLightbox = (photoIndex: number) => {
     setSelectedPhoto(photoIndex);
@@ -240,27 +266,32 @@ export default function AlbumPage({
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1 bg-border">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-1">
               {photos.map((photo, index) => (
                 <button
                   key={photo.id}
                   onClick={() => openLightbox(index)}
-                  className="aspect-square bg-background hover:bg-blue-50/50 transition-colors duration-200 group relative overflow-hidden"
+                  className="aspect-square bg-background hover:bg-blue-50/50 transition-colors duration-200 group relative overflow-hidden border border-border/20 hover:border-border/40"
                 >
                   <Image
-                    src={api.getPublicPhoto(clubSlug, albumSlug, photo.id) || "/placeholder.svg?height=400&width=400&text=Loading..."}
+                    src={
+                      api.getPublicPhoto(clubSlug, albumSlug, photo.id) ||
+                      "/placeholder.svg?height=400&width=400&text=Loading..."
+                    }
                     alt={`Photo ${index + 1}`}
                     width={400}
                     height={400}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    style={{ objectFit: "cover" }}
                     onError={(e) => {
                       // Fallback to placeholder if image fails to load
-                      e.currentTarget.src = `/placeholder.svg?height=400&width=400&text=${index + 1
-                        }`;
+                      e.currentTarget.src = `/placeholder.svg?height=400&width=400&text=${
+                        index + 1
+                      }`;
                     }}
                   />
                   <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="text-xs font-mono text-white bg-black/60 px-2 py-1 backdrop-blur-sm">
+                    <div className="text-xs font-mono text-white bg-black/60 px-2 py-1 backdrop-blur-sm rounded">
                       {(index + 1).toString().padStart(3, "0")}
                     </div>
                   </div>
@@ -271,61 +302,60 @@ export default function AlbumPage({
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="border-t bg-secondary/10">
-        <div className="max-w-6xl mx-auto px-8 py-12">
-          <div className="flex items-center justify-between text-xs font-mono text-muted-foreground">
-            <div>© 2025 MPSTME.PICS</div>
-            <div className="flex items-center gap-4">
-              <span>SYSTEM STATUS: OPERATIONAL</span>
-              <div className="w-2 h-2 bg-emerald-300 rounded-full"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Lightbox Modal */}
       <Dialog open={selectedPhoto !== null} onOpenChange={closeLightbox}>
         <DialogContent className="max-w-7xl w-full h-[95vh] p-0 border-none bg-background rounded-none overflow-hidden">
           <div className="relative w-full h-full flex items-center justify-center bg-muted/5">
+            {/* Close Button */}
+            <button
+              onClick={closeLightbox}
+              className="absolute top-6 right-6 z-20 w-10 h-10 bg-background/80 backdrop-blur-sm border border-border hover:bg-background hover:border-foreground/20 flex items-center justify-center transition-all duration-200"
+            >
+              <X className="w-5 h-5 text-foreground" />
+            </button>
+
             {/* Navigation Buttons */}
             {photos.length > 1 && (
               <>
                 <button
                   onClick={() => navigatePhoto("prev")}
-                  className="absolute left-8 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-background/80 backdrop-blur-sm border border-border hover:bg-background hover:border-foreground/20 flex items-center justify-center transition-all duration-200"
+                  className="absolute left-6 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-background/80 backdrop-blur-sm border border-border hover:bg-background hover:border-foreground/20 flex items-center justify-center transition-all duration-200"
                 >
                   <ChevronLeft className="w-5 h-5 text-foreground" />
                 </button>
 
                 <button
                   onClick={() => navigatePhoto("next")}
-                  className="absolute right-8 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-background/80 backdrop-blur-sm border border-border hover:bg-background hover:border-foreground/20 flex items-center justify-center transition-all duration-200"
+                  className="absolute right-6 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-background/80 backdrop-blur-sm border border-border hover:bg-background hover:border-foreground/20 flex items-center justify-center transition-all duration-200"
                 >
                   <ChevronRight className="w-5 h-5 text-foreground" />
                 </button>
               </>
             )}
 
-            {/* Photo */}
+            {/* Photo Container with Fixed Height */}
             {selectedPhotoData && (
-              <div className="max-w-full max-h-full p-16">
-                <Image
-                  src={api.getPublicPhoto(
-                    clubSlug,
-                    albumSlug,
-                    selectedPhotoData.id
-                  )}
-                  alt={`Photo ${(selectedPhoto || 0) + 1}`}
-                  width={1600}
-                  height={1600}
-                  className="max-w-full max-h-full object-contain"
-                  onError={(e) => {
-                    // Fallback to placeholder if image fails to load
-                    e.currentTarget.src = `/placeholder.svg?height=1200&width=1200&text=${(selectedPhoto || 0) + 1
+              <div className="w-full h-full flex items-center justify-center p-20">
+                <div className="relative w-full h-[70vh] flex items-center justify-center">
+                  <Image
+                    src={api.getPublicPhoto(
+                      clubSlug,
+                      albumSlug,
+                      selectedPhotoData.id
+                    )}
+                    alt={`Photo ${(selectedPhoto || 0) + 1}`}
+                    width={1600}
+                    height={1200}
+                    className="max-w-full max-h-full object-contain"
+                    style={{ maxHeight: "70vh" }}
+                    onError={(e) => {
+                      // Fallback to placeholder if image fails to load
+                      e.currentTarget.src = `/placeholder.svg?height=1200&width=1200&text=${
+                        (selectedPhoto || 0) + 1
                       }`;
-                  }}
-                />
+                    }}
+                  />
+                </div>
               </div>
             )}
 

@@ -39,6 +39,7 @@ export interface Album {
   coverImage?: string;
   photoCount?: number;
   firstImage?: number; // ID of the first image in the album
+  clubSlug?: string;
 }
 
 export interface Photo {

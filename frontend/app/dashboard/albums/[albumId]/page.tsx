@@ -28,7 +28,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, use } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
@@ -50,15 +50,16 @@ import type { Album, Photo } from "@/lib/types";
 import { AuthenticatedImage } from "@/components/authenticated-image";
 
 interface AlbumDetailPageProps {
-  params: {
+  params: Promise<{
     albumId: string;
-  };
+  }>;
 }
 
 export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
   const router = useRouter();
   const { user } = useAuth();
-  const albumId = parseInt(params.albumId);
+  const { albumId: albumIdParam } = use(params);
+  const albumId = parseInt(albumIdParam);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [album, setAlbum] = useState<Album | null>(null);
@@ -162,7 +163,12 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
 
   const handleTogglePhotoVisibility = async (photoId: number) => {
     try {
-      const response = await api.togglePhotoVisibility(photoId);
+      const photo = photos.find((p) => p.id === photoId);
+      if (!photo) return;
+
+      const response = await api.updatePhoto(photoId, {
+        isPublic: !photo.isPublic,
+      });
       if (response.success && response.data) {
         setPhotos(
           photos.map((photo) =>
@@ -436,7 +442,11 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                       alt={`Photo ${photo.id}`}
                       className="w-full h-full object-cover"
                       onError={(error) => {
-                        console.log("Image load error for photo:", photo, error);
+                        console.log(
+                          "Image load error for photo:",
+                          photo,
+                          error
+                        );
                       }}
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-colors duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
@@ -487,10 +497,11 @@ export default function AlbumDetailPage({ params }: AlbumDetailPageProps) {
                     <div className="absolute top-2 right-2">
                       <Badge
                         variant={photo.isPublic ? "default" : "secondary"}
-                        className={`text-xs ${photo.isPublic
-                          ? "bg-green-100 text-green-800"
-                          : "bg-neutral-100 text-neutral-600"
-                          }`}
+                        className={`text-xs ${
+                          photo.isPublic
+                            ? "bg-green-100 text-green-800"
+                            : "bg-neutral-100 text-neutral-600"
+                        }`}
                       >
                         {photo.isPublic ? "public" : "private"}
                       </Badge>
