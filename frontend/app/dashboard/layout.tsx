@@ -47,7 +47,6 @@ import { api } from "@/lib/api";
 const clubAdminNavigation = [
   { name: "Overview", href: "/dashboard/clubadmin", icon: LayoutDashboard },
   { name: "Albums", href: "/dashboard/albums", icon: FolderOpen },
-  { name: "Photos", href: "/dashboard/photos", icon: ImageIcon },
   { name: "Analytics", href: "/dashboard/analytics", icon: BarChart3 },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
