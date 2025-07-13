@@ -28,6 +28,7 @@ router.patch(
     "/admin/clubs/:clubId",
     authenticate,
     requireRole("superadmin"),
+    clubLogoUpload.single("logo"), // Accept file upload for logo on update
     updateClub,
 );
 router.delete(

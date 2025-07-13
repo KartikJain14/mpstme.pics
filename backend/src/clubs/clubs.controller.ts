@@ -66,14 +66,16 @@ export const createClub = async (req: any, res: any) => {
 
 export const updateClub = async (req: any, res: any) => {
     const { clubId } = req.params;
+    // Accept both JSON and multipart/form-data
+    const hasLogoFile = !!req.file;
+    // Accept text fields from form-data or JSON
     const bodySchema = z.object({
         name: z.string().min(2).optional(),
-        logoUrl: z.string().url().optional(),
         bio: z.string().optional(),
         slug: z.string().optional(),
-        storageQuotaMb: z.number().int().positive().optional(),
+        storageQuotaMb: z.coerce.number().int().positive().optional(),
     });
-
+    // If multipart, fields are in req.body as strings
     const parsed = bodySchema.safeParse(req.body);
     if (!parsed.success) {
         return res.status(400).json({
@@ -88,6 +90,11 @@ export const updateClub = async (req: any, res: any) => {
     if (updateData.name && !updateData.slug) {
         updateData.slug = generateSlug(updateData.name);
     }
+    // Only update logoUrl if a file was uploaded
+    if (hasLogoFile && req.file?.key) {
+        updateData.logoUrl = req.file.key;
+    }
+    // If no file uploaded, do not touch logoUrl (do not allow direct URL update)
 
     const [updated] = await db
         .update(clubs)
