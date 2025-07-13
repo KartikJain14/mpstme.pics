@@ -18,12 +18,7 @@ export const clubLogoUpload = multer({
         contentType: multerS3.AUTO_CONTENT_TYPE,
         key: async (req: any, file: Express.Multer.File, cb) => {
             try {
-                // Use club name or slug for folder, fallback to 'clubs'
-                const name = req.body.name || "clubs";
-                const slug = name
-                    .toLowerCase()
-                    .replace(/[^a-z0-9]+/g, "-")
-                    .replace(/(^-|-$)/g, "");
+                const slug = req.body.slug;
                 const filename = generateFilename(file.originalname);
                 const fullKey = `${slug}/logo/${filename}`;
                 cb(null, fullKey);
