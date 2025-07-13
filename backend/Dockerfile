@@ -1,21 +1,18 @@
-# Use official Node.js image
-FROM node:20-alpine
+FROM node:lts-alpine AS builder
+WORKDIR /usr/src/app
+COPY package*.json ./
+COPY pnpm-lock.yaml ./
+RUN npm install -g pnpm@latest-10
+RUN pnpm install --prod --frozen-lockfile --silent && pnpm store prune
+COPY prisma ./prisma/
+RUN pnpx prisma generate
 
-# Set working directory
-WORKDIR /app
-
-# Copy dependencies
-COPY package.json package-lock.json ./
-RUN npm install
-
-# Copy source files
+FROM node:lts-alpine AS production
+WORKDIR /usr/src/app
+COPY --from=builder /usr/src/app/node_modules ./node_modules
+COPY --from=builder /usr/src/app/prisma ./prisma/
 COPY . .
-
-# Build TypeScript
-RUN npm run build
-
-# Expose app port
+RUN npm i -g pnpm@latest-10
 EXPOSE 3000
-
-# Start the app
-CMD ["node", "dist/index.js"]
+USER node
+CMD ["pnpm", "start"]
