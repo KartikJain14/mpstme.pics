@@ -1,16 +1,15 @@
 FROM node:lts-alpine AS builder
 WORKDIR /usr/src/app
 COPY package*.json ./
-COPY pnpm-lock.yaml ./
-RUN npm install -g pnpm@latest-10
-RUN pnpm install --prod --frozen-lockfile --silent && pnpm store prune
-RUN pnpx drizzle-kit generate
+COPY . .
+RUN npm install
+RUN npx drizzle-kit generate
 
 FROM node:lts-alpine AS production
 WORKDIR /usr/src/app
 COPY --from=builder /usr/src/app/node_modules ./node_modules
+COPY --from=builder /usr/src/app/package-lock.json ./package-lock.json
 COPY . .
-RUN npm i -g pnpm@latest-10
 EXPOSE 3000
 USER node
-CMD ["pnpm", "start"]
+CMD ["npm", "start"]
