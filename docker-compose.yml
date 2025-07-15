@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
     backend:
         image: ghcr.io/kartikjain14/mpstme.pics:latest
@@ -13,9 +11,10 @@ services:
             - ./backend/.env.prod
         volumes:
             - .:/app
+        command: ["sh", "-c", "npx drizzle-kit migrate && npm run start"]
 
     db:
-        image: postgres:15
+        image: bitnami/postgresql
         container_name: mpstme-pics-db
         restart: unless-stopped
         ports:
@@ -27,5 +26,17 @@ services:
         volumes:
             - postgres_data:/var/lib/postgresql/data
 
+    redis:
+        image: bitnami/redis:latest
+        container_name: mpstme-pics-redis
+        restart: unless-stopped
+        ports:
+            - "6379:6379"
+        volumes:
+            - redis_data:/data
+        environment:
+            ALLOW_EMPTY_PASSWORD: "yes"
+    
 volumes:
     postgres_data:
+    redis_data:
