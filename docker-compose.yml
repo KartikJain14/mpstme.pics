@@ -13,18 +13,18 @@ services:
             - .:/app
         command: ["sh", "-c", "npx drizzle-kit migrate && npm run start"]
 
-    db:
-        image: bitnami/postgresql
-        container_name: mpstme-pics-db
-        restart: unless-stopped
-        ports:
-            - "5432:5432"
-        environment:
-            POSTGRES_USER: postgres
-            POSTGRES_PASSWORD: postgres
-            POSTGRES_DB: mpstme_pics
-        volumes:
-            - postgres_data:/var/lib/postgresql/data
+    # db:
+    #     image: bitnami/postgresql
+    #     container_name: mpstme-pics-db
+    #     restart: unless-stopped
+    #     ports:
+    #         - "5432:5432"
+    #     environment:
+    #         POSTGRES_USER: postgres
+    #         POSTGRES_PASSWORD: postgres
+    #         POSTGRES_DB: mpstme_pics
+    #     volumes:
+    #         - postgres_data:/var/lib/postgresql/data
 
     redis:
         image: bitnami/redis:latest
@@ -38,5 +38,5 @@ services:
             ALLOW_EMPTY_PASSWORD: "yes"
     
 volumes:
-    postgres_data:
+    # postgres_data:
     redis_data:
