@@ -13,6 +13,10 @@ export const createClub = async (req: any, res: any) => {
         name: z.string().min(2),
         bio: z.string().optional(),
         storageQuotaMb: z.coerce.number().int().positive().optional(),
+        website: z.string().url().optional(),
+        instagram: z.string().optional(),
+        linkedin: z.string().optional(),
+        otherLinks: z.array(z.string()).optional(), // Accept array of strings
     });
     // If multipart, fields are in req.body as strings
     const parsed = bodySchema.safeParse(req.body);
@@ -24,7 +28,7 @@ export const createClub = async (req: any, res: any) => {
             data: null,
         });
     }
-    const { name, bio, storageQuotaMb } = parsed.data;
+    const { name, bio, storageQuotaMb, website, instagram, linkedin, otherLinks } = parsed.data;
     const slug = generateSlug(name);
     const [existing] = await db
         .select()
@@ -54,6 +58,10 @@ export const createClub = async (req: any, res: any) => {
             logoUrl: logoKey, // store only the key
             bio,
             storageQuotaMb,
+            website,
+            instagram,
+            linkedin,
+            otherLinks: otherLinks,
         })
         .returning();
     res.status(201).json({
@@ -74,6 +82,10 @@ export const updateClub = async (req: any, res: any) => {
         bio: z.string().optional(),
         slug: z.string().optional(),
         storageQuotaMb: z.coerce.number().int().positive().optional(),
+        website: z.string().url().optional(),
+        instagram: z.string().optional(),
+        linkedin: z.string().optional(),
+        otherLinks: z.array(z.string().url()).optional(), // Accept array of strings
     });
     // If multipart, fields are in req.body as strings
     const parsed = bodySchema.safeParse(req.body);
@@ -94,7 +106,7 @@ export const updateClub = async (req: any, res: any) => {
     if (hasLogoFile && req.file?.key) {
         updateData.logoUrl = req.file.key;
     }
-    // If no file uploaded, do not touch logoUrl (do not allow direct URL update)
+    
 
     const [updated] = await db
         .update(clubs)
@@ -174,11 +186,20 @@ export const getMyClub = async (req: any, res: any) => {
             bio: club.bio,
             storageQuotaMb: club.storageQuotaMb,
             storageUsedMb: +(Number(used) / (1024 * 1024)).toFixed(2),
+            website: club.website,
+            instagram: club.instagram,
+            linkedin: club.linkedin,
+            otherLinks: club.otherLinks,
         },
     });
 };
 
 export const getAllClubs = async (req: any, res: any) => {
     const all = await db.select().from(clubs);
-    res.json({ success: true, message: null, error: null, data: all });
+    // Parse otherLinks for each club
+    const clubsWithLinks = all.map((club: any) => ({
+        ...club,
+        otherLinks: club.otherLinks ? JSON.parse(club.otherLinks) : [],
+    }));
+    res.json({ success: true, message: null, error: null, data: clubsWithLinks });
 };
