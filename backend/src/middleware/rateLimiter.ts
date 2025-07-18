@@ -2,8 +2,8 @@ import rateLimit from "express-rate-limit";
 
 // Apply this globally in index.ts
 export const rateLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 min window
-    max: 10000, // limit each IP to 100 requests per window
+    windowMs: 3 * 60 * 1000,
+    max: 1000,
     standardHeaders: true,
     legacyHeaders: false,
 });
