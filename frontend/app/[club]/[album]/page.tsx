@@ -314,6 +314,41 @@ export default function AlbumPage({
               <X className="w-5 h-5 text-foreground" />
             </button>
 
+            {/* Download Button */}
+            {selectedPhotoData && (
+              <a
+                href={
+                  api.getPublicPhoto(
+                    clubSlug,
+                    albumSlug,
+                    selectedPhotoData.id
+                  ) || "/placeholder.svg"
+                }
+                download={`photo_${((selectedPhoto || 0) + 1)
+                  .toString()
+                  .padStart(3, "0")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute top-6 right-20 z-20 w-10 h-10 bg-background/80 backdrop-blur-sm border border-border hover:bg-background hover:border-foreground/20 flex items-center justify-center transition-all duration-200"
+                title="Download photo"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-5 h-5 text-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"
+                  />
+                </svg>
+              </a>
+            )}
+
             {/* Navigation Buttons */}
             {photos.length > 1 && (
               <>

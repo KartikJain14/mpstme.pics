@@ -1,6 +1,6 @@
 import type { User, Club, Album, Photo, ApiResponse } from "./types";
 
-const API_BASE = "/api"; // Use Next.js proxy instead of direct backend URL
+const API_BASE = `${process.env.NEXT_PUBLIC_API_URL}/api`; // Use Next.js proxy instead of direct backend URL
 
 class ApiClient {
   private token: string | null = null;
