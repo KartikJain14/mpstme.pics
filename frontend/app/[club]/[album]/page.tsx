@@ -305,14 +305,7 @@ export default function AlbumPage({
       {/* Lightbox Modal */}
       <Dialog open={selectedPhoto !== null} onOpenChange={closeLightbox}>
         <DialogContent className="max-w-7xl w-full h-[95vh] p-0 border-none bg-background rounded-none overflow-hidden">
-          <div className="relative w-full h-full flex items-center justify-center bg-muted/5">
-            {/* Close Button */}
-            <button
-              onClick={closeLightbox}
-              className="absolute top-6 right-6 z-20 w-10 h-10 bg-background/80 backdrop-blur-sm border border-border hover:bg-background hover:border-foreground/20 flex items-center justify-center transition-all duration-200"
-            >
-              <X className="w-5 h-5 text-foreground" />
-            </button>
+          <div className="relative w-full h-full flex items-center justify-center bg-muted/5">  
 
             {/* Download Button */}
             {selectedPhotoData && (
