@@ -168,7 +168,7 @@ class ApiClient {
   }
 
   getPublicPhoto(clubSlug: string, albumSlug: string, photoId: number) {
-    return `/club/${clubSlug}/${albumSlug}/photo/${photoId}`;
+    return `${process.env.NEXT_PUBLIC_API_URL}/club/${clubSlug}/${albumSlug}/photo/${photoId}`;
   }
 
   async getPhotoCount() {
@@ -247,7 +247,7 @@ class ApiClient {
     return this.request<Album>(`/me/albums/${albumId}`);
   }
   getLogo(clubSlug: string) {
-    return `/club/${clubSlug}/logo`;
+    return `${process.env.NEXT_PUBLIC_API_URL}/club/${clubSlug}/logo`;
   }
   // Admin routes
   async getAdminStats() {
