@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
+import posthog from "posthog-js";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -32,6 +33,11 @@ export default function LoginPage() {
 
       // Redirect based on user role with hard navigation
       let targetPath;
+      console.log("User:", user);
+     posthog.identify(user.id.toString(), {
+        email: user.email,
+        role: user.role,
+      });
       if (user.role === "superadmin") {
         targetPath = redirectPath
           ? decodeURIComponent(redirectPath)
@@ -65,6 +71,14 @@ export default function LoginPage() {
     } catch (err) {
       setError("Login failed. Please try again.");
     } finally {
+
+      const { user } = useAuth();
+      console.log("User:", user);
+
+      posthog.identify(user.id.toString(), {
+        email: user.email,
+        role: user.role,
+      });
       setLoading(false);
     }
   };

@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import type { Club, Album } from "@/lib/types";
+import posthog from "posthog-js";
 
 export default function ClubAdminDashboard() {
   const { user } = useAuth();
@@ -24,7 +25,13 @@ export default function ClubAdminDashboard() {
   const [albums, setAlbums] = useState<Album[]>([]);
   const [loading, setLoading] = useState(true);
 
+
   useEffect(() => {
+    console.log("User:", user);
+   posthog.identify(user.id.toString(), {
+      email: user.email,
+      role: user.role,
+    });
     const fetchData = async () => {
       try {
         const [clubResponse, albumsResponse] = await Promise.all([
@@ -211,16 +218,7 @@ export default function ClubAdminDashboard() {
               <p className="text-xs text-muted-foreground mb-1">
                 {stat.description}
               </p>
-              <div
-                className={`text-xs flex items-center ${stat.trendUp ? "text-green-600" : "text-red-600"
-                  }`}
-              >
-                <TrendingUp
-                  className={`w-3 h-3 mr-1 ${!stat.trendUp ? "rotate-180" : ""
-                    }`}
-                />
-                {stat.trend}
-              </div>
+
             </CardContent>
           </Card>
         ))}
