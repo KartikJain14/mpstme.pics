@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { api } from "@/lib/api";
+import { LRUCache } from "@/lib/lru";
+
+// LRU cache with a capacity of 50 images
+const imageCache = new LRUCache<number, string>(50);
 
 interface AuthenticatedImageProps {
   photoId: number;
@@ -37,6 +41,14 @@ export function AuthenticatedImage({
 
   useEffect(() => {
     if (!shouldLoad) return;
+
+    // Check cache first
+    if (imageCache.has(photoId)) {
+      setImageSrc(imageCache.get(photoId)!);
+      setLoading(false);
+      return;
+    }
+
     const fetchImage = async () => {
       try {
         const token = localStorage.getItem("auth_token");
@@ -55,6 +67,11 @@ export function AuthenticatedImage({
         if (response.ok) {
           const blob = await response.blob();
           const imageUrl = URL.createObjectURL(blob);
+          // Store in cache
+          const evicted = imageCache.put(photoId, imageUrl);
+          if (evicted) {
+            URL.revokeObjectURL(evicted.evictedValue);
+          }
           setImageSrc(imageUrl);
         } else {
           setImageSrc("/placeholder.svg");
@@ -68,12 +85,8 @@ export function AuthenticatedImage({
       }
     };
     fetchImage();
-    // Cleanup function to revoke object URL
-    return () => {
-      if (imageSrc.startsWith("blob:")) {
-        URL.revokeObjectURL(imageSrc);
-      }
-    };
+    // The cleanup function is no longer needed since the LRU cache will
+    // automatically revoke the object URL when an item is evicted.
   }, [shouldLoad, photoId, onError]);
 
   if (loading) {
