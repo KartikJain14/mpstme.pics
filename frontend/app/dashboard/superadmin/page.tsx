@@ -688,6 +688,10 @@ export default function SuperAdminDashboard() {
                 name: editClubForm.name,
                 slug: editClubForm.slug,
                 storageQuotaMb: editClubForm.storageQuotaMb,
+                instagram: editClubForm.instagram,
+                linkedin: editClubForm.linkedin,
+                website: editClubForm.website,
+                otherLinks: editClubForm.otherLinks.filter((link) => link.trim() !== ""),
               };
               if (editClubForm.logoFile)
                 formData.logoFile = editClubForm.logoFile;
