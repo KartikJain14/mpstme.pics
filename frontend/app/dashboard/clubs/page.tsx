@@ -33,7 +33,7 @@ export default function ClubsPage() {
     logoFile: undefined as File | undefined,
     instagram: "",
     linkedin: "",
-    website: "",  
+    website: "",
     otherLinks: [] as string[],
   });
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -47,6 +47,7 @@ export default function ClubsPage() {
     linkedin: "",
     website: "",
     otherLinks: [] as string[], 
+
   });
 
   useEffect(() => {
@@ -102,6 +103,7 @@ export default function ClubsPage() {
       instagram: editClubForm.instagram,
       linkedin: editClubForm.linkedin,
       website: editClubForm.website,
+
       otherLinks: editClubForm.otherLinks.filter((link) => link.trim() !== ""),
     };
     if (editClubForm.logoFile) formData.logoFile = editClubForm.logoFile;
