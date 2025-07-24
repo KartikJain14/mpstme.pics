@@ -31,6 +31,10 @@ export default function ClubsPage() {
     bio: "",
     storageQuotaMb: 500,
     logoFile: undefined as File | undefined,
+    instagram: "",
+    linkedin: "",
+    website: "",
+    otherLinks: [] as string[],
   });
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editClub, setEditClub] = useState<Club | null>(null);
@@ -39,6 +43,10 @@ export default function ClubsPage() {
     slug: "",
     storageQuotaMb: 500,
     logoFile: undefined as File | undefined,
+    instagram: "",
+    linkedin: "",
+    website: "",
+    otherLinks: [] as string[],
   });
 
   useEffect(() => {
@@ -73,6 +81,10 @@ export default function ClubsPage() {
           bio: "",
           storageQuotaMb: 500,
           logoFile: undefined,
+          instagram: "",
+          linkedin: "",
+          website: "",
+          otherLinks: [],
         });
       }
     } catch (error) {
@@ -87,6 +99,10 @@ export default function ClubsPage() {
       name: editClubForm.name,
       slug: editClubForm.slug,
       storageQuotaMb: editClubForm.storageQuotaMb,
+      instagram: editClubForm.instagram,
+      linkedin: editClubForm.linkedin,
+      website: editClubForm.website,
+      otherLinks: editClubForm.otherLinks,
     };
     if (editClubForm.logoFile) formData.logoFile = editClubForm.logoFile;
     const res = await api.updateClub(editClub.id, formData);
@@ -319,6 +335,10 @@ export default function ClubsPage() {
                         slug: club.slug,
                         storageQuotaMb: club.storageQuotaMb,
                         logoFile: undefined,
+                        instagram: club.instagram || "",
+                        linkedin: club.linkedin || "",
+                        website: club.website || "",
+                        otherLinks: club.otherLinks || [],
                       });
                       setIsEditDialogOpen(true);
                     }}
