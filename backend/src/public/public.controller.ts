@@ -68,6 +68,7 @@ export const getAllPublicClubs = async (req: any, res: any) => {
             data: newClubs,
         });
     } catch (error) {
+        console.error("Error fetching clubs:", error);
         res.status(500).json({
             success: false,
             message: null,

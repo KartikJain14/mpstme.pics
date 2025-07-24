@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LogoutButton } from "@/components/logout-button";
-import { Folder, Calendar, ImageIcon, Users } from "lucide-react";
+import { Folder, Calendar, ImageIcon, Users, Globe, Instagram, Linkedin } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useEffect, useState, use } from "react";
 import { api } from "@/lib/api";
@@ -31,13 +31,13 @@ export default function ClubPage({
         if (response.success && response.data) {
           setClub(response.data.club);
           setAlbums(response.data.publicAlbums || []);
-          
+
           // Calculate total photo count for this club
           const totalPhotos = response.data.publicAlbums?.reduce((total, album) => {
             return total + (album.photoCount || 0);
           }, 0) || 0;
           setPhotoCount(totalPhotos);
-          
+
           if (response.data.publicAlbums?.length) {
             const photoMap: Record<number, string> = {};
             await Promise.all(
@@ -194,6 +194,30 @@ export default function ClubPage({
                 <p className="text-xl font-light text-muted-foreground leading-relaxed max-w-2xl">
                   {club.bio}
                 </p>
+                {(club.website || club.instagram || club.linkedin || (club.otherLinks?.length ?? 0) > 0) && (
+                  <div className="flex gap-4 pt-4">
+                    {club.website && (
+                      <a href={club.website} target="_blank" rel="noopener noreferrer">
+                        <Globe className="w-5 h-5 text-blue-600 hover:text-blue-800" />
+                      </a>
+                    )}
+                    {club.instagram && (
+                      <a href={club.instagram} target="_blank" rel="noopener noreferrer">
+                        <Instagram className="w-5 h-5 text-pink-500 hover:text-pink-700" />
+                      </a>
+                    )}
+                    {club.linkedin && (
+                      <a href={club.linkedin} target="_blank" rel="noopener noreferrer">
+                        <Linkedin className="w-5 h-5 text-blue-700 hover:text-blue-900" />
+                      </a>
+                    )}
+                    {club.otherLinks?.map((link, i) => (
+                      <a key={i} href={link} target="_blank" rel="noopener noreferrer">
+                        <Globe className="w-5 h-5 text-neutral-600 hover:text-neutral-800" />
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
