@@ -1,1 +1,0 @@
-ALTER TABLE "clubs" DROP COLUMN "other_links";

@@ -16,6 +16,7 @@ export const createClub = async (req: any, res: any) => {
         website: z.string().url().optional(),
         instagram: z.string().optional(),
         linkedin: z.string().optional(),
+        otherLinks: z.array(z.string()).optional(), // Accept array of strings
     });
     // If multipart, fields are in req.body as strings
     const parsed = bodySchema.safeParse(req.body);
@@ -27,7 +28,7 @@ export const createClub = async (req: any, res: any) => {
             data: null,
         });
     }
-    const { name, bio, storageQuotaMb, website, instagram, linkedin } = parsed.data;
+    const { name, bio, storageQuotaMb, website, instagram, linkedin, otherLinks } = parsed.data;
     const slug = generateSlug(name);
     const [existing] = await db
         .select()
@@ -60,6 +61,7 @@ export const createClub = async (req: any, res: any) => {
             website,
             instagram,
             linkedin,
+            otherLinks: otherLinks,
         })
         .returning();
     res.status(201).json({
@@ -83,6 +85,7 @@ export const updateClub = async (req: any, res: any) => {
         website: z.string().url().optional(),
         instagram: z.string().optional(),
         linkedin: z.string().optional(),
+        otherLinks: z.array(z.string().url()).optional(), // Accept array of strings
     });
     // If multipart, fields are in req.body as strings
     const parsed = bodySchema.safeParse(req.body);
@@ -186,11 +189,17 @@ export const getMyClub = async (req: any, res: any) => {
             website: club.website,
             instagram: club.instagram,
             linkedin: club.linkedin,
+            otherLinks: club.otherLinks,
         },
     });
 };
 
 export const getAllClubs = async (req: any, res: any) => {
     const all = await db.select().from(clubs);
-    res.json({ success: true, message: null, error: null, data: all });
+    // Parse otherLinks for each club
+    const clubsWithLinks = all.map((club: any) => ({
+        ...club,
+        otherLinks: club.otherLinks ? JSON.parse(club.otherLinks) : [],
+    }));
+    res.json({ success: true, message: null, error: null, data: clubsWithLinks });
 };
