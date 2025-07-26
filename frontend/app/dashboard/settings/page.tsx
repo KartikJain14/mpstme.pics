@@ -345,27 +345,6 @@ export default function SettingsPage() {
                     }
                   />
                 </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Require Login for Downloads</Label>
-                    <p className="text-sm text-neutral-600">
-                      Users must be logged in to download photos
-                    </p>
-                  </div>
-                  <Switch
-                    checked={settings.privacySettings.requireLoginForDownload}
-                    onCheckedChange={(checked) =>
-                      setSettings((prev) => ({
-                        ...prev,
-                        privacySettings: {
-                          ...prev.privacySettings,
-                          requireLoginForDownload: checked,
-                        },
-                      }))
-                    }
-                  />
-                </div>
               </CardContent>
             </Card>
           )}
