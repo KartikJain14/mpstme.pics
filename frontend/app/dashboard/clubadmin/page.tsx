@@ -27,11 +27,17 @@ export default function ClubAdminDashboard() {
 
 
   useEffect(() => {
-    console.log("User:", user);
-   posthog.identify(user.id.toString(), {
-      email: user.email,
-      role: user.role,
-    });
+    //   console.log("User:", user);
+    //  posthog.identify(user.id.toString(), {
+    //     email: user.email,
+    //     role: user.role,
+    //   });
+    if (user) {
+      posthog.identify(user.id.toString(), {
+        email: user.email,
+        role: user.role,
+      });
+    }
     const fetchData = async () => {
       try {
         const [clubResponse, albumsResponse] = await Promise.all([
