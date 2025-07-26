@@ -194,7 +194,7 @@ export default function ClubPage({
                 <p className="text-xl font-light text-muted-foreground leading-relaxed max-w-2xl">
                   {club.bio}
                 </p>
-                {(club.website || club.instagram || club.linkedin || (club.otherLinks?.length ?? 0) > 0) && (
+                {(club.website || club.instagram || club.linkedin && (
                   <div className="flex gap-4 pt-4">
                     {club.website && (
                       <a href={club.website} target="_blank" rel="noopener noreferrer">
@@ -211,11 +211,6 @@ export default function ClubPage({
                         <Linkedin className="w-5 h-5 text-blue-700 hover:text-blue-900" />
                       </a>
                     )}
-                    {club.otherLinks?.map((link, i) => (
-                      <a key={i} href={link} target="_blank" rel="noopener noreferrer">
-                        <Globe className="w-5 h-5 text-neutral-600 hover:text-neutral-800" />
-                      </a>
-                    ))}
                   </div>
                 )}
               </div>

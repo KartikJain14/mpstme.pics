@@ -47,7 +47,6 @@ export default function SuperAdminDashboard() {
     instagram: "",
     linkedin: "",
     website: "",
-    otherLinks: [] as string[],
   });
 
   const [newUser, setNewUser] = useState({
@@ -71,7 +70,6 @@ export default function SuperAdminDashboard() {
     instagram: "",
     linkedin: "",
     website: "",
-    otherLinks: [] as string[],
   });
   const [isEditClubOpen, setIsEditClubOpen] = useState(false);
   // Edit User State
@@ -124,7 +122,6 @@ export default function SuperAdminDashboard() {
         instagram: newClub.instagram,
         linkedin: newClub.linkedin,
         website: newClub.website,
-        otherLinks: newClub.otherLinks.filter((link) => link.trim() !== ""),
       });
       if (response.success && response.data) {
         setClubs([...clubs, response.data]);
@@ -137,7 +134,6 @@ export default function SuperAdminDashboard() {
           instagram: "",
           linkedin: "",
           website: "",
-          otherLinks: [],
         });
       }
     } catch (error) {
@@ -399,46 +395,6 @@ export default function SuperAdminDashboard() {
                       placeholder="https://linkedin.com/in/yourclub"
                     />
                   </div>
-                  <div>
-                    <Label>Other Links</Label>
-                    {(newClub.otherLinks || [""]).map((link, index) => (
-                      <div key={index} className="flex gap-2 mt-1">
-                        <Input
-                          value={link}
-                          onChange={(e) => {
-                            const updated = [...(newClub.otherLinks || [])];
-                            updated[index] = e.target.value;
-                            setNewClub({ ...newClub, otherLinks: updated });
-                          }}
-                          placeholder="https://example.com/resource"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={() => {
-                            const updated = [...(newClub.otherLinks || [])];
-                            updated.splice(index, 1);
-                            setNewClub({ ...newClub, otherLinks: updated });
-                          }}
-                        >
-                          Remove
-                        </Button>
-                      </div>
-                    ))}
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="mt-2"
-                      onClick={() =>
-                        setNewClub({
-                          ...newClub,
-                          otherLinks: [...(newClub.otherLinks || []), ""],
-                        })
-                      }
-                    >
-                      Add Link
-                    </Button>
-                  </div>
                 </div>
                 <DialogFooter>
                   <Button
@@ -499,7 +455,6 @@ export default function SuperAdminDashboard() {
                             instagram: club.instagram || "",
                             linkedin: club.linkedin || "",
                             website: club.website || "",
-                            otherLinks: club.otherLinks || [],
                           });
                           setIsEditClubOpen(true);
                         }}
@@ -691,7 +646,6 @@ export default function SuperAdminDashboard() {
                 instagram: editClubForm.instagram,
                 linkedin: editClubForm.linkedin,
                 website: editClubForm.website,
-                otherLinks: editClubForm.otherLinks.filter((link) => link.trim() !== ""),
               };
               if (editClubForm.logoFile)
                 formData.logoFile = editClubForm.logoFile;
@@ -797,46 +751,6 @@ export default function SuperAdminDashboard() {
                 }
                 placeholder="https://linkedin.com/in/yourclub"
               />
-            </div>
-            <div>
-              <Label>Other Links</Label>
-              {(editClubForm.otherLinks || [""]).map((link, index) => (
-                <div key={index} className="flex gap-2 mt-1">
-                  <Input
-                    value={link}
-                    onChange={(e) => {
-                      const updated = [...(editClubForm.otherLinks || [])];
-                      updated[index] = e.target.value;
-                      setEditClubForm((f) => ({ ...f, otherLinks: updated }));
-                    }}
-                    placeholder="https://example.com/resource"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => {
-                      const updated = [...(editClubForm.otherLinks || [])];
-                      updated.splice(index, 1);
-                      setEditClubForm((f) => ({ ...f, otherLinks: updated }));
-                    }}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                className="mt-2"
-                onClick={() =>
-                  setEditClubForm((f) => ({
-                    ...f,
-                    otherLinks: [...(f.otherLinks || []), ""],
-                  }))
-                }
-              >
-                Add Link
-              </Button>
             </div>
             <DialogFooter>
               <Button

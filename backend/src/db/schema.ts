@@ -29,7 +29,6 @@ export const clubs = pgTable("clubs", {
     website: varchar("website", { length: 255 }),
     instagram: varchar("instagram", { length: 255 }),
     linkedin: varchar("linkedin", { length: 255 }),
-    otherLinks: text("other_links").array().default([]),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
