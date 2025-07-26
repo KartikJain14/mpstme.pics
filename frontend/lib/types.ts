@@ -25,7 +25,6 @@ export interface Club {
   website?: string;
   instagram?: string;
   linkedin?: string;
-  otherLinks?:string[];
 }
 
 // When using albums collections, always use: Album[]

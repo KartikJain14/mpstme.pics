@@ -34,7 +34,6 @@ export default function ClubsPage() {
     instagram: "",
     linkedin: "",
     website: "",
-    otherLinks: [] as string[],
   });
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editClub, setEditClub] = useState<Club | null>(null);
@@ -46,7 +45,6 @@ export default function ClubsPage() {
     instagram: "",
     linkedin: "",
     website: "",
-    otherLinks: [] as string[], 
 
   });
 
@@ -85,7 +83,6 @@ export default function ClubsPage() {
           instagram: "",
           linkedin: "",
           website: "",
-          otherLinks: [],
         });
       }
     } catch (error) {
@@ -103,8 +100,6 @@ export default function ClubsPage() {
       instagram: editClubForm.instagram,
       linkedin: editClubForm.linkedin,
       website: editClubForm.website,
-
-      otherLinks: editClubForm.otherLinks.filter((link) => link.trim() !== ""),
     };
     if (editClubForm.logoFile) formData.logoFile = editClubForm.logoFile;
     const res = await api.updateClub(editClub.id, formData);
@@ -340,7 +335,6 @@ export default function ClubsPage() {
                         instagram: club.instagram || "",
                         linkedin: club.linkedin || "",
                         website: club.website || "",
-                        otherLinks: club.otherLinks || [],
                       });
                       setIsEditDialogOpen(true);
                     }}
