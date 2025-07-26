@@ -22,10 +22,6 @@ export interface Club {
   storageUsedMb?: number;
   updatedAt?: string;
   albumCount?: number;
-  website?: string;
-  instagram?: string;
-  linkedin?: string;
-  otherLinks?:string[];
 }
 
 // When using albums collections, always use: Album[]
