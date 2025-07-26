@@ -27,12 +27,8 @@ export default function ClubAdminDashboard() {
 
 
   useEffect(() => {
-    //   console.log("User:", user);
-    //  posthog.identify(user.id.toString(), {
-    //     email: user.email,
-    //     role: user.role,
-    //   });
     if (user) {
+      console.log("User:", user);
       posthog.identify(user.id.toString(), {
         email: user.email,
         role: user.role,
@@ -174,7 +170,7 @@ export default function ClubAdminDashboard() {
             </div>
             {club.logoUrl && (
               <img
-                src={club.logoUrl}
+                src={api.getLogo(club.slug)}
                 alt={`${club.name} logo`}
                 className="w-16 h-16 rounded-lg object-cover"
               />
