@@ -212,7 +212,7 @@ export default function ClubPage({
                       </a>
                     )}
                   </div>
-                )}
+                ))}
               </div>
             </div>
           </div>
