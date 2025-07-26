@@ -170,7 +170,7 @@ export default function ClubAdminDashboard() {
             </div>
             {club.logoUrl && (
               <img
-                src={club.logoUrl}
+                src={api.getLogo(club.slug)}
                 alt={`${club.name} logo`}
                 className="w-16 h-16 rounded-lg object-cover"
               />

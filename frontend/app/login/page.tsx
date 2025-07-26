@@ -34,7 +34,7 @@ export default function LoginPage() {
       // Redirect based on user role with hard navigation
       let targetPath;
       console.log("User:", user);
-     posthog.identify(user.id.toString(), {
+      posthog.identify(user.id.toString(), {
         email: user.email,
         role: user.role,
       });
@@ -74,11 +74,13 @@ export default function LoginPage() {
 
       const { user } = useAuth();
       console.log("User:", user);
+      if (user) {
 
-      posthog.identify(user.id.toString(), {
-        email: user.email,
-        role: user.role,
-      });
+        posthog.identify(user.id.toString(), {
+          email: user.email,
+          role: user.role,
+        });
+      }
       setLoading(false);
     }
   };
