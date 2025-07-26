@@ -46,8 +46,7 @@ export default function ClubsPage() {
     instagram: "",
     linkedin: "",
     website: "",
-    otherLinks: [] as string[], 
-
+    otherLinks: [] as string[],
   });
 
   useEffect(() => {
@@ -103,8 +102,7 @@ export default function ClubsPage() {
       instagram: editClubForm.instagram,
       linkedin: editClubForm.linkedin,
       website: editClubForm.website,
-
-      otherLinks: editClubForm.otherLinks.filter((link) => link.trim() !== ""),
+      otherLinks: editClubForm.otherLinks,
     };
     if (editClubForm.logoFile) formData.logoFile = editClubForm.logoFile;
     const res = await api.updateClub(editClub.id, formData);
