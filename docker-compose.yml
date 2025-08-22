@@ -37,12 +37,12 @@ services:
         environment:
             ALLOW_EMPTY_PASSWORD: "yes"
     
-    watchtower:
-        image: containrrr/watchtower
-        volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
-        - /home/.docker/config.json:/config.json
-        command: --interval 30
+    # watchtower:
+    #     image: containrrr/watchtower
+    #     volumes:
+    #     - /var/run/docker.sock:/var/run/docker.sock
+    #     - /home/.docker/config.json:/config.json
+    #     command: --interval 30
 
 volumes:
     # postgres_data:
