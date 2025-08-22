@@ -10,6 +10,6 @@ WORKDIR /usr/src/app
 COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY --from=builder /usr/src/app/package-lock.json ./package-lock.json
 COPY . .
-EXPOSE 3000
+EXPOSE 3001
 USER node
 CMD ["npm", "start"]

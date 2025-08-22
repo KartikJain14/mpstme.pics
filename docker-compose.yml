@@ -1,17 +1,19 @@
 services:
     backend:
-        image: ghcr.io/kartikjain14/mpstme.pics:latest
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
         container_name: mpstme-pics-backend
         restart: unless-stopped
         ports:
-            - "3001:3001"
+          - "3001:3001"
         # depends_on:
         #     - db
         env_file:
-            - ./backend/.env.prod
-        volumes:
-            - .:/app
+            - ./backend/.env
         command: ["sh", "-c", "npx drizzle-kit migrate && npm run start"]
+        networks:
+            - mpstme-pics-network
 
     # db:
     #     image: bitnami/postgresql
@@ -36,6 +38,24 @@ services:
             - redis_data:/data
         environment:
             ALLOW_EMPTY_PASSWORD: "yes"
+        networks:
+            - mpstme-pics-network
+
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+            args:
+                NEXT_PUBLIC_API_URL: https://backend.mpstme.pics
+        container_name: mpstme-pics-frontend
+        restart: unless-stopped
+        ports:
+            - "3000:3000"
+        environment:
+            - NEXT_PUBLIC_API_URL=https://backend.mpstme.pics
+        networks:
+            - mpstme-pics-network
+        command: ["npm", "start"]
     
     # watchtower:
     #     image: containrrr/watchtower
@@ -47,3 +67,7 @@ services:
 volumes:
     # postgres_data:
     redis_data:
+
+networks:
+  mpstme-pics-network:
+    driver: bridge
